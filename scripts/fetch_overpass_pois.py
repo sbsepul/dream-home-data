@@ -34,7 +34,7 @@ QUERY = f"""
   way["shop"="mall"]{RM_BBOX};
   way["highway"="motorway"]{RM_BBOX};
 );
-out center tags;
+out tags geom;
 """
 
 
@@ -61,13 +61,6 @@ def fetch_overpass(query: str, retries: int = 5) -> dict:
 
 def element_to_feature(el: dict) -> dict | None:
     tags = el.get("tags", {})
-    if el["type"] == "node":
-        lon, lat = el["lon"], el["lat"]
-        geometry = {"type": "Point", "coordinates": [lon, lat]}
-    elif "center" in el:
-        geometry = {"type": "Point", "coordinates": [el["center"]["lon"], el["center"]["lat"]]}
-    else:
-        return None  # way sin geometria resuelta (no deberia pasar con "out center")
 
     category = None
     if tags.get("shop") == "supermarket":
@@ -76,6 +69,25 @@ def element_to_feature(el: dict) -> dict | None:
         category = "mall"
     elif tags.get("highway") == "motorway":
         category = "autopista"
+
+    if el["type"] == "node":
+        geometry = {"type": "Point", "coordinates": [el["lon"], el["lat"]]}
+    elif el["type"] == "way" and "geometry" in el:
+        nodes = el["geometry"]
+        if category == "autopista":
+            # las autopistas son lineas reales, no su centroide
+            geometry = {
+                "type": "LineString",
+                "coordinates": [[n["lon"], n["lat"]] for n in nodes],
+            }
+        else:
+            # para supermercados/malls (poligono del edificio) alcanza con
+            # el centroide simple de los nodos del way
+            lon = sum(n["lon"] for n in nodes) / len(nodes)
+            lat = sum(n["lat"] for n in nodes) / len(nodes)
+            geometry = {"type": "Point", "coordinates": [lon, lat]}
+    else:
+        return None  # way sin geometria resuelta (no deberia pasar con "out geom")
 
     return {
         "type": "Feature",
