@@ -14,8 +14,10 @@ dream-home u otro repo — acá se deja la materia prima lista para consumir.
 |---|---|---|---|
 | `data/processed/metro_estaciones.geojson` | Puntos, una por estación física (ya deduplicadas por andén/sentido) | 126 | GTFS DTPM |
 | `data/processed/metro_lineas.geojson` | Líneas (trazado), una por línea de Metro | 7 | GTFS DTPM |
+| `data/processed/metro_estaciones_futuras.geojson` | Estaciones en construcción o proyectadas (L6, L7, L8 y L9) | 53 | OpenStreetMap + fuentes oficiales |
+| `data/processed/metro_lineas_futuras.geojson` | Trazados futuros, separados de la red operativa | 4 | OpenStreetMap + fuentes oficiales |
 | `data/processed/supermercados.geojson` | Puntos, clasificados por tamaño (`grande`/`mediano`/`chico`) | ~830 | OpenStreetMap |
-| `data/processed/malls.geojson` | Puntos | ~230 | OpenStreetMap |
+| `data/processed/malls.geojson` | Puntos, clasificados por tamaño (`grande`/`mediano`/`chico`) | ~230 | OpenStreetMap |
 | `data/processed/autopistas.geojson` | Líneas, segmentadas por tramo (comportamiento normal de OSM) | ~4000 | OpenStreetMap |
 
 Para límites de comuna/región (no amenities, pero útil para agregación
@@ -30,6 +32,27 @@ GTFS de cada andén que se promedió para llegar a esta estación).
 
 **Metro líneas**: `linea` (ej. "L1"), `nombre` (ej. "Línea 1"), `color`
 (hex, del GTFS oficial).
+
+**Metro futuro** se mantiene separado del GTFS operativo para no presentar
+proyectos como servicio disponible. Las estaciones incluyen `linea`, `nombre`,
+`estado` (`en_construccion` o `proyectada`), `apertura_estimada`, `osm_type` y
+`osm_id`; cuando OSM informa el orden dentro de la línea también se incluye
+`orden`. Los trazados son `MultiLineString` y agregan `fuente_geometria`.
+
+La capa considera únicamente proyectos con trazado público definido:
+
+- Extensión L6 a Lo Errázuriz: 1 estación, construcción, apertura estimada 2027.
+- L7: 19 estaciones, construcción, apertura estimada 2028.
+- L8: 14 estaciones, proyectada en dos etapas para 2032 y 2033.
+- L9: 19 estaciones, construcción, etapas estimadas para 2030, 2032 y 2033.
+
+Los nombres y ubicaciones todavía pueden cambiar antes de la apertura. Los
+plazos y cantidades se contrastan con las publicaciones de
+[extensión L6](https://www.mtt.gob.cl/extension-de-la-linea-6-inicia-obras-que-sumaran-nueva-estacion-en-cerrillos-para-90-mil-beneficiados/),
+[L7](https://www.mtt.gob.cl/futura-linea-7-de-metro-sigue-avanzando-realizo-su-primer-encuentro-de-tuneles/),
+[L8](https://www.gob.cl/noticias/conozca-cual-sera-el-trayecto-de-la-nueva-linea-8-de-metro/) y
+[L9](https://www.gob.cl/noticias/comienzo-obras-linea-9-metro-santiago-trayecto-inicio-operaciones/).
+Las geometrías y nombres consumibles se obtienen de OpenStreetMap.
 
 **Supermercados / malls**: `categoria`, `nombre` (cae a `brand` u
 `operator` de OSM si no hay tag `name`; ~99% de los supermercados y
@@ -55,17 +78,39 @@ objetivo) — por eso vas a ver algún "Líder Express" clasificado como
 `grande`: el edificio mapeado en OSM para ese local en particular mide
 más de lo que el nombre sugiere.
 
+**Malls** además trae una clasificación trazable por capacidad y cantidad
+de tiendas:
+
+- `area_m2`: superficie de la huella del polígono del mall en OSM.
+- `capacidad_personas_estimada`: ocupación simultánea aproximada, calculada
+  como `area_m2 / 4`. Es una señal comparable entre malls, **no un aforo
+  oficial**: no incorpora pisos ni superficie arrendable que OSM no informe.
+- `cantidad_tiendas`: cantidad de POI `shop=*` de OSM cuyo nodo o centro cae
+  dentro del polígono. No equivale a un catastro oficial y puede subestimar
+  malls con poco detalle interior en OSM.
+- `tamano_por_capacidad`: chico (<750 personas), mediano (750-3749) o grande
+  (≥3750).
+- `tamano_por_tiendas`: chico (<15 tiendas), mediano (15-59) o grande (≥60).
+- `tamano`: la mayor de las dos clasificaciones disponibles. Esto evita que
+  la cobertura incompleta de tiendas en OSM rebaje un mall con gran capacidad.
+  `tamano_metodo`, `capacidad_metodo` y `cantidad_tiendas_metodo` dejan
+  registrado cómo se obtuvo cada valor.
+
+Los malls representados solo por un nodo no tienen polígono para estimar
+capacidad ni contar tiendas; quedan con `tamano: "sin_dato"`. Cuando existe
+también un `way` con el mismo nombre, se conserva el `way` y se descarta el
+nodo duplicado.
+
 **Autopistas**: mismo esquema que supermercados/malls, `categoria` siempre
 `"autopista"`. Cada feature es un tramo (way) de OSM, no la autopista
 completa — para distancia-al-punto-más-cercano esto no importa, pero si
 necesitás la ruta completa hay que unir tramos por nombre.
 
 > **Nota sobre `malls.geojson`**: OSM usa el mismo tag `shop=mall` tanto
-> para grandes centros comerciales (Mall Plaza Tobalaba, Costanera Center)
-> como para galerías comerciales chicas (Galería San Antonio). Si el
-> indicador de valor necesita distinguir "mall grande" de "galería", hay
-> que filtrar por otro criterio (nombre, o cruzar con una lista curada) —
-> no viene resuelto en el dato crudo.
+> para grandes centros comerciales como para galerías chicas. La clasificación
+> permite distinguirlos de forma aproximada sin depender del nombre, pero su
+> precisión sigue limitada por la geometría y el nivel de detalle disponibles
+> en OSM.
 
 ## Licencias
 
@@ -87,6 +132,16 @@ python3 scripts/fetch_metro_gtfs.py /tmp/gtfs_extracted
 
 Revisá [dtpm.cl/index.php/noticias/gtfs-vigente](https://www.dtpm.cl/index.php/noticias/gtfs-vigente)
 por la URL del GTFS vigente — cambia de nombre en cada actualización.
+
+### Metro futuro (OpenStreetMap / fuentes oficiales)
+
+```sh
+python3 scripts/fetch_metro_futuro_osm.py
+```
+
+El script valida que estén presentes los cuatro trazados y el número esperado
+de estaciones por proyecto. Si OSM cambia etiquetas o agrega extensiones
+tentativas, falla explícitamente en vez de publicar una capa incompleta.
 
 ### Supermercados, malls, autopistas (OpenStreetMap / Overpass)
 
