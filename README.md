@@ -14,7 +14,7 @@ dream-home u otro repo — acá se deja la materia prima lista para consumir.
 |---|---|---|---|
 | `data/processed/metro_estaciones.geojson` | Puntos, una por estación física (ya deduplicadas por andén/sentido) | 126 | GTFS DTPM |
 | `data/processed/metro_lineas.geojson` | Líneas (trazado), una por línea de Metro | 7 | GTFS DTPM |
-| `data/processed/supermercados.geojson` | Puntos | ~830 | OpenStreetMap |
+| `data/processed/supermercados.geojson` | Puntos, clasificados por tamaño (`grande`/`mediano`/`chico`) | ~830 | OpenStreetMap |
 | `data/processed/malls.geojson` | Puntos | ~230 | OpenStreetMap |
 | `data/processed/autopistas.geojson` | Líneas, segmentadas por tramo (comportamiento normal de OSM) | ~4000 | OpenStreetMap |
 
@@ -31,9 +31,29 @@ GTFS de cada andén que se promedió para llegar a esta estación).
 **Metro líneas**: `linea` (ej. "L1"), `nombre` (ej. "Línea 1"), `color`
 (hex, del GTFS oficial).
 
-**Supermercados / malls**: `categoria`, `nombre` (puede venir vacío si el
-POI no tiene tag `name` en OSM), `osm_type`, `osm_id` (para volver a
-consultar en openstreetmap.org si hace falta más detalle).
+**Supermercados / malls**: `categoria`, `nombre` (cae a `brand` u
+`operator` de OSM si no hay tag `name`; ~99% de los supermercados y
+~82% de los malls tienen alguno de los tres), `osm_type`, `osm_id` (para
+volver a consultar en openstreetmap.org si hace falta más detalle).
+
+**Supermercados** además trae `tamano` (`"grande"` / `"mediano"` /
+`"chico"` / `"sin_dato"`) y `tamano_metodo`:
+
+- `area_edificio`: el POI es un `way` de OSM (tiene polígono de edificio,
+  ~57% de los casos) y `tamano` sale de su superficie real en `area_m2`
+  (≥2500 m² grande, 800-2500 mediano, <800 chico).
+- `marca_conocida`: el POI es solo un nodo (sin polígono) y `tamano` sale
+  de una heurística por marca (Jumbo/Tottus/Líder no-Express = grande;
+  Santa Isabel/Unimarc/Ekono = mediano; formato Express o marcas chicas
+  conocidas = chico). Ver `BRAND_SIZE_HINTS` en
+  `scripts/fetch_overpass_pois.py` — es una lista curada a mano, no un
+  dato oficial, y no cubre todas las cadenas.
+- `sin_dato`: ni polígono ni marca reconocida.
+
+Cuando hay `area_edificio` disponible manda por sobre la marca (más
+objetivo) — por eso vas a ver algún "Líder Express" clasificado como
+`grande`: el edificio mapeado en OSM para ese local en particular mide
+más de lo que el nombre sugiere.
 
 **Autopistas**: mismo esquema que supermercados/malls, `categoria` siempre
 `"autopista"`. Cada feature es un tramo (way) de OSM, no la autopista
@@ -89,7 +109,9 @@ dream-home:
   estaciones — se puede calcular sobre `metro_estaciones.geojson`, o sobre
   `metro_lineas.geojson` si importa la cercanía a la vía y no solo al
   andén)
-- Conteo de supermercados/malls dentro de un radio (ej. 500m, 1km)
+- Conteo de supermercados/malls dentro de un radio (ej. 500m, 1km) —
+  pesando quizás por `tamano` (un Jumbo a 800m puede pesar más que un
+  minimarket a 200m, según el objetivo del indicador)
 - Distancia a la autopista más cercana (probablemente negativo para el
   valor por ruido/tráfico, no positivo — a diferencia de las otras capas)
 - Todo esto se puede precalcular por comuna (join espacial con

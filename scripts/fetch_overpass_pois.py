@@ -25,6 +25,59 @@ OVERPASS_URL = "https://overpass-api.de/api/interpreter"
 # calculado desde Regional.geojson de sbsepul/Chile-GeoJSON.
 RM_BBOX = (-34.2909, -71.7152, -32.9219, -69.7700)
 
+# Metros por grado en la latitud de Santiago (~-33.45), para pasar el area
+# del poligono (shoelace en grados) a m2 sin depender de shapely/pyproj.
+# Aproximacion equirectangular, suficiente para este uso (no es para medir
+# terrenos, es para clasificar "chico/mediano/grande").
+METERS_PER_DEG_LAT = 111_320
+METERS_PER_DEG_LON = 111_320 * 0.8348  # cos(33.45 deg)
+
+# Heuristica de marca -> tamano tipico, usada SOLO cuando el POI es un nodo
+# sin poligono de edificio (no hay area real que medir). No es un dato
+# oficial de superficie, es una clasificacion aproximada por formato de
+# tienda conocido en Chile. Cuando hay poligono, el area manda.
+BRAND_SIZE_HINTS = {
+    "grande": ["jumbo", "tottus", "lider", "líder"],
+    "mediano": ["santa isabel", "unimarc", "ekono", "alvi"],
+    "chico": ["ok market", "almac", "acuenta", "a cuenta", "economax", "supermercado 10"],
+}
+
+
+def classify_size_by_brand(name: str | None) -> str | None:
+    if not name:
+        return None
+    n = name.lower()
+    # el formato "Express" es chico sea cual sea la cadena (Lider Express,
+    # Unimarc Express, etc.) - se chequea antes que las listas de marca
+    # completa para no confundirlo con el formato grande/mediano de la
+    # misma cadena.
+    if "express" in n:
+        return "chico"
+    for size, brands in BRAND_SIZE_HINTS.items():
+        if any(b in n for b in brands):
+            return size
+    return None
+
+
+def classify_size_by_area(area_m2: float) -> str:
+    if area_m2 >= 2500:
+        return "grande"
+    if area_m2 >= 800:
+        return "mediano"
+    return "chico"
+
+
+def polygon_area_m2(nodes: list[dict]) -> float:
+    """Formula del shoelace sobre un anillo cerrado, en grados, convertida
+    a m2 con la aproximacion equirectangular de arriba."""
+    coords = [(n["lon"] * METERS_PER_DEG_LON, n["lat"] * METERS_PER_DEG_LAT) for n in nodes]
+    area = 0.0
+    for i in range(len(coords) - 1):
+        x1, y1 = coords[i]
+        x2, y2 = coords[i + 1]
+        area += x1 * y2 - x2 * y1
+    return abs(area) / 2
+
 QUERY = f"""
 [out:json][timeout:90];
 (
@@ -70,6 +123,7 @@ def element_to_feature(el: dict) -> dict | None:
     elif tags.get("highway") == "motorway":
         category = "autopista"
 
+    area_m2 = None
     if el["type"] == "node":
         geometry = {"type": "Point", "coordinates": [el["lon"], el["lat"]]}
     elif el["type"] == "way" and "geometry" in el:
@@ -86,17 +140,33 @@ def element_to_feature(el: dict) -> dict | None:
             lon = sum(n["lon"] for n in nodes) / len(nodes)
             lat = sum(n["lat"] for n in nodes) / len(nodes)
             geometry = {"type": "Point", "coordinates": [lon, lat]}
+            if len(nodes) >= 4 and nodes[0] == nodes[-1]:
+                area_m2 = round(polygon_area_m2(nodes))
     else:
         return None  # way sin geometria resuelta (no deberia pasar con "out geom")
 
+    name = tags.get("name") or tags.get("brand") or tags.get("operator")
+
+    properties = {
+        "categoria": category,
+        "nombre": name,
+        "osm_type": el["type"],
+        "osm_id": el["id"],
+    }
+
+    if category == "supermercado":
+        if area_m2 is not None:
+            properties["area_m2"] = area_m2
+            properties["tamano"] = classify_size_by_area(area_m2)
+            properties["tamano_metodo"] = "area_edificio"
+        else:
+            by_brand = classify_size_by_brand(name)
+            properties["tamano"] = by_brand or "sin_dato"
+            properties["tamano_metodo"] = "marca_conocida" if by_brand else "sin_dato"
+
     return {
         "type": "Feature",
-        "properties": {
-            "categoria": category,
-            "nombre": tags.get("name"),
-            "osm_type": el["type"],
-            "osm_id": el["id"],
-        },
+        "properties": properties,
         "geometry": geometry,
     }
 
