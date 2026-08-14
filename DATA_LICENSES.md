@@ -10,6 +10,7 @@ El código de este repo es MIT (ver [LICENSE](LICENSE)), pero cada archivo en
 | `autopistas.geojson` | OpenStreetMap (`highway=motorway`) | ODbL 1.0 | Segmentado en muchos tramos por way, es el comportamiento normal de OSM |
 | `metro_estaciones.geojson`, `metro_lineas.geojson` | [GTFS DTPM](https://www.dtpm.cl/index.php/noticias/gtfs-vigente) | **No especificada** | La página de descarga no indica términos de uso. Usar con esa reserva; si dream-home pasa a producción, conviene confirmar con DTPM antes de redistribuir. |
 | `metro_estaciones_futuras.geojson`, `metro_lineas_futuras.geojson` | OpenStreetMap, contrastado con publicaciones oficiales de MTT/Gob.cl | ODbL 1.0 | Las geometrías y nombres consumibles provienen de OSM; estados, cantidades y plazos se verifican con las fuentes enlazadas en el README |
+| `salud.geojson` | MINSAL/DEIS ("Establecimientos de Salud Vigentes", [datos.gob.cl](https://datos.gob.cl/dataset/establecimientos-de-salud-vigentes)) para hospitales/clínicas/consultorios; OpenStreetMap (`amenity=pharmacy`) para farmacias | MINSAL/DEIS: [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/); OSM: ODbL 1.0 | Cada feature declara su `procedencia` (`minsal_deis` u `osm`); no hay deduplicación entre ambas. Detalle de fuentes, versión y checksum en `data/processed/dataset-manifest.json` |
 
 ## Atribución OSM
 

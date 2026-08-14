@@ -1,0 +1,31 @@
+{
+  "datasets": {
+    "salud.geojson": {
+      "fuentes": [
+        {
+          "nombre": "MINSAL/DEIS - Establecimientos de Salud Vigentes",
+          "url_api": "https://datos.gob.cl/api/3/action/package_show?id=establecimientos-de-salud-vigentes",
+          "url_recurso_usado_en_esta_corrida": "https://datos.gob.cl/dataset/3bf4cf7c-f638-4735-9a01-f65faae4beca/resource/2c44d782-3365-44e3-aefb-2c8b8363a1bc/download/establecimientos_20260811.csv",
+          "licencia": "CC0 1.0 (Creative Commons CCZero) via datos.gob.cl",
+          "cobertura": "Todo Chile, filtrado aqui a Región Metropolitana (RegionCodigo=13) y estado vigente"
+        },
+        {
+          "nombre": "OpenStreetMap (Overpass API) - amenity=pharmacy",
+          "url_api": "https://overpass-api.de/api/interpreter",
+          "licencia": "ODbL 1.0",
+          "atribucion": "© OpenStreetMap contributors",
+          "cobertura": "Región Metropolitana (bbox fijo, ver RM_BBOX en el script)",
+          "nota": "MINSAL no incluye farmacias en su registro de establecimientos de salud; este complemento cubre ese vacío."
+        }
+      ],
+      "version": "minsal-deis+osm-overpass:2026-08-14",
+      "checksum_sha256": "f2c160825960b15d53dd84e4b87d601b02dbd2468e5a24a78fe076973fb44440",
+      "generado_en": "2026-08-14T21:26:47.269796+00:00",
+      "limitaciones": [
+        "No se deduplican establecimientos entre MINSAL y OSM: ambas fuentes conviven con su campo 'procedencia'.",
+        "No se incluyen aún amenity=hospital|clinic|doctors de OSM: MINSAL ya es la fuente autoritativa para esos tipos.",
+        "No hay dato de afluencia diaria, capacidad de personas ni cantidad de pacientes: ninguna fuente gratuita y sostenible lo provee (ver docs/implementation-plans/16-health-banks-commerce-poi-plan.md)."
+      ]
+    }
+  }
+}
