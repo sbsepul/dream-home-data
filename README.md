@@ -8,6 +8,20 @@ Este repo **solo recolecta y normaliza datos**. El cálculo del indicador de
 valor de vivienda (ej. score por cercanía a amenities) queda para
 dream-home u otro repo — acá se deja la materia prima lista para consumir.
 
+El inventario de fuentes escolares y de educación superior está en
+[`EDUCATION_DATA_SOURCES.md`](EDUCATION_DATA_SOURCES.md), con su registro
+legible por máquinas en [`sources/education.json`](sources/education.json).
+Encontrar una fuente no implica que esté autorizada para descarga o
+redistribución: el registro diferencia fuentes listas, pendientes de revisión,
+portales de consulta y accesos restringidos.
+
+El archivador reproducible guarda originales y procedencia sin sobrescribir
+releases:
+
+```sh
+python3 scripts/archive_education_source.py mineduc_school_directory
+```
+
 ## Datos disponibles
 
 | Archivo | Contenido | Features | Fuente |
