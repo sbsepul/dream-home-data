@@ -106,7 +106,7 @@ Medianas por sector:
 
 | Dato | Estado | Camino propuesto |
 | --- | --- | --- |
-| Mensualidad exacta de particulares pagados | El tramo superior es «Más de $100.000» (440 de 498 pagados) y no discrimina | Ninguna fuente pública masiva lo informa; evaluar una captura asistida desde el sitio de cada colegio, empezando por los cercanos a las viviendas guardadas |
+| Mensualidad exacta de particulares pagados | El tramo superior es «Más de $100.000» (440 de 498 pagados) y no discrimina | Primera versión desde los sitios de cada colegio: 112 de 498 con mensualidad, ver [`SCHOOL_FEES.md`](SCHOOL_FEES.md) |
 | Gimnasio, estadio, piscina, canchas | Sin fuente masiva oficial: el catastro MINEDUC es de 2012–2013 y sólo municipal; la ficha MIME no expone datos en HTML | Cruzar polígonos `amenity=school` de OpenStreetMap con instalaciones `leisure` (pitch, sports_centre, sports_hall, swimming_pool, stadium) (Overpass no respondió el 2026-11-24) |
 | Categoría de desempeño | El portal de la Agencia sólo publica 2016–2019 | Buscar la ordenación reciente o derivarla sólo si la Agencia publica el método |
 | Evolución SIMCE/IDPS | Sólo 2025 | Archivar 2022–2024 y calcular series por grado y asignatura |
