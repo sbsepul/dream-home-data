@@ -1,6 +1,6 @@
 # DH-040 — Fuentes de datos de Educación en Chile
 
-Actualizado: 2026-08-14.
+Actualizado: 2026-11-24.
 
 Este documento define cómo identificar y conservar las fuentes que pueden
 enriquecer la capa Educación de Dream Home. El catálogo legible por máquinas es
@@ -8,7 +8,9 @@ enriquecer la capa Educación de Dream Home. El catálogo legible por máquinas 
 decisiones que no caben en una fila del registro.
 
 La secuencia de implementación, entregables y criterios de cierre se mantiene
-en [`DH-040_IMPLEMENTATION_PLAN.md`](DH-040_IMPLEMENTATION_PLAN.md).
+en [`DH-040_IMPLEMENTATION_PLAN.md`](DH-040_IMPLEMENTATION_PLAN.md). El perfil
+nacional de colegios que ya se construye con estas fuentes está en
+[`SCHOOL_PROFILES.md`](SCHOOL_PROFILES.md).
 
 ## Alcance
 
@@ -108,6 +110,12 @@ python3 scripts/archive_education_source.py mineduc_school_directory --list-rele
 python3 scripts/archive_education_source.py mineduc_school_directory
 python3 scripts/verify_education_archive.py
 ```
+
+Las fuentes que no publican enlaces en HTML declaran `release_resolver`: la
+Agencia de Calidad se resuelve por su API REST (`agency_rest` con un patrón de
+nombre que captura el año) y las páginas con varios archivos por año usan
+`link_pattern` (por ejemplo, sólo «Inscritos-Puntajes» entre las bases PAES).
+El `metadata.json` copia `license` y `terms_url` del catálogo cuando existen.
 
 Sólo se automatizan entradas `ready` con acceso `public_download`. Los datos
 quedan en `data/raw/education/`, excluidos de Git, hasta contar con object
@@ -232,3 +240,5 @@ El detalle operativo y los gates están en el plan DH-040 vinculado arriba.
 - [Superintendencia de Educación en datos.gob.cl](https://datos.gob.cl/organization/superintendencia-de-educacion)
 - [SNED](https://sned.mineduc.cl/)
 - [SNCAE](https://sncae.mma.gob.cl/portal/establecimientos)
+- [Bases PAES en Datos Abiertos MINEDUC](https://datosabiertos.mineduc.cl/pruebas-de-admision-a-la-educacion-superior/)
+- [Denuncias de la Superintendencia de Educación](https://www.supereduc.cl/denuncias-ingresadas/)

@@ -199,6 +199,17 @@ Criterio de cierre:
 - la interfaz explica año, prueba, cobertura y ausencia de información;
 - fallos de una fuente no eliminan el último release válido.
 
+## Avance 2026-11-24
+
+`scripts/build_school_profiles.py` cubre una primera versión de los incrementos
+2 a 5 para colegios: directorio con dependencia oficial y sector derivado,
+grados, matrícula, docentes, tramos de pago, copago FICOM, SEP, rendimiento y
+retiro, SIMCE e IDPS 2025, PAES agregada de la admisión 2026 y denuncias de la
+Superintendencia 2025. Detalle, cobertura y límites en
+[`SCHOOL_PROFILES.md`](SCHOOL_PROFILES.md). Siguen pendientes: object storage,
+series históricas SIMCE/IDPS, licencias de las fuentes sin términos publicados
+y la integración en data-platform/web.
+
 ## Orden inmediato recomendado
 
 1. Crear el manifiesto versionado de los 11 releases existentes.

@@ -22,6 +22,10 @@ releases:
 python3 scripts/archive_education_source.py mineduc_school_directory
 ```
 
+El perfil nacional de colegios (dependencia, grados, matrícula, precio, retiro,
+SIMCE, IDPS, PAES y denuncias por RBD) se construye con
+`scripts/build_school_profiles.py`; ver [`SCHOOL_PROFILES.md`](SCHOOL_PROFILES.md).
+
 ## Datos disponibles
 
 | Archivo | Contenido | Features | Fuente |
