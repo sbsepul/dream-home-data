@@ -9,6 +9,7 @@ import json
 import os
 import re
 import ssl
+import subprocess
 import sys
 import tempfile
 from dataclasses import dataclass
@@ -53,15 +54,40 @@ class DownloadLinkParser(HTMLParser):
             self.links.append(urljoin(self.base_url, href))
 
 
+MACOS_ROOT_KEYCHAIN = Path("/System/Library/Keychains/SystemRootCertificates.keychain")
+
+
+def _macos_root_certificates() -> str:
+    """Raíces del llavero de macOS; incluyen CA recientes ausentes de /etc/ssl/cert.pem."""
+    if not MACOS_ROOT_KEYCHAIN.is_file():
+        return ""
+    try:
+        result = subprocess.run(
+            ["security", "find-certificate", "-a", "-p", str(MACOS_ROOT_KEYCHAIN)],
+            capture_output=True,
+            check=True,
+            text=True,
+            timeout=30,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return ""
+    return result.stdout
+
+
 def tls_context() -> ssl.SSLContext:
     """Usa raíces del sistema si el Python de macOS no instaló su bundle."""
     paths = ssl.get_default_verify_paths()
     if paths.cafile:
         return ssl.create_default_context()
     system_bundle = Path("/etc/ssl/cert.pem")
-    if system_bundle.is_file():
-        return ssl.create_default_context(cafile=system_bundle)
-    return ssl.create_default_context()
+    context = (
+        ssl.create_default_context(cafile=system_bundle)
+        if system_bundle.is_file()
+        else ssl.create_default_context()
+    )
+    if macos_roots := _macos_root_certificates():
+        context.load_verify_locations(cadata=macos_roots)
+    return context
 
 
 def load_source(source_id: str, catalog_path: Path = CATALOG_PATH) -> dict:
@@ -79,14 +105,20 @@ def load_source(source_id: str, catalog_path: Path = CATALOG_PATH) -> dict:
     return source
 
 
-def release_candidates(html: str, landing_url: str) -> list[ReleaseCandidate]:
+def release_candidates(
+    html: str, landing_url: str, link_pattern: str | None = None
+) -> list[ReleaseCandidate]:
+    """Enlaces descargables con año; `link_pattern` filtra el nombre del archivo."""
     parser = DownloadLinkParser(landing_url)
     parser.feed(html)
+    name_filter = re.compile(link_pattern, re.IGNORECASE) if link_pattern else None
     candidates: dict[str, ReleaseCandidate] = {}
     for url in parser.links:
         path = unquote(urlparse(url).path)
         extension = Path(path).suffix.lower()
         if extension not in ARCHIVE_EXTENSIONS:
+            continue
+        if name_filter and not name_filter.search(Path(path).name):
             continue
         years = YEAR_PATTERN.findall(Path(path).name)
         if not years:
@@ -100,14 +132,45 @@ def release_candidates(html: str, landing_url: str) -> list[ReleaseCandidate]:
     )
 
 
-def resolve_release(source: dict, requested_release: str | None = None) -> ReleaseCandidate:
-    request = Request(source["landing_url"], headers={"User-Agent": USER_AGENT})
+def _fetch_text(url: str) -> tuple[str, str]:
+    request = Request(url, headers={"User-Agent": USER_AGENT})
     with urlopen(request, timeout=60, context=tls_context()) as response:
         charset = response.headers.get_content_charset() or "utf-8"
-        html = response.read().decode(charset, errors="replace")
-        effective_url = response.geturl()
+        return response.read().decode(charset, errors="replace"), response.geturl()
 
-    candidates = release_candidates(html, effective_url)
+
+def agency_candidates(listing: dict, api_url: str, name_pattern: str) -> list[ReleaseCandidate]:
+    """Releases del portal de la Agencia de Calidad, que expone su catálogo por REST.
+
+    `name_pattern` debe capturar el año en el grupo `year`.
+    """
+    pattern = re.compile(name_pattern, re.IGNORECASE)
+    candidates: dict[str, ReleaseCandidate] = {}
+    for item in listing.get("data") or []:
+        match = pattern.search((item.get("nombre") or "").strip())
+        uuid = item.get("uuid")
+        if not match or not uuid:
+            continue
+        name = item["nombre"].strip()
+        suffix = Path(name).suffix.lower()
+        extension = suffix if suffix in ARCHIVE_EXTENSIONS else ".rar"
+        url = f"{api_url.rstrip('/')}/archivo/obtener?uuid={uuid}"
+        candidates.setdefault(match.group("year"), ReleaseCandidate(url, match.group("year"), extension))
+    return sorted(candidates.values(), key=lambda candidate: int(candidate.release_id), reverse=True)
+
+
+def list_candidates(source: dict) -> list[ReleaseCandidate]:
+    resolver = source.get("release_resolver") or {}
+    if resolver.get("kind") == "agency_rest":
+        api_url = resolver["api_url"]
+        text, _ = _fetch_text(f"{api_url.rstrip('/')}/archivo/getAllByTipo/0")
+        return agency_candidates(json.loads(text), api_url, resolver["name_pattern"])
+    html, effective_url = _fetch_text(source["landing_url"])
+    return release_candidates(html, effective_url, resolver.get("link_pattern"))
+
+
+def resolve_release(source: dict, requested_release: str | None = None) -> ReleaseCandidate:
+    candidates = list_candidates(source)
     if requested_release:
         candidates = [candidate for candidate in candidates if candidate.release_id == requested_release]
     if not candidates:
@@ -191,8 +254,8 @@ def archive_release(source: dict, candidate: ReleaseCandidate, archive_root: Pat
             "sha256": checksum,
             "bytes": byte_count,
             "media_type": media_type,
-            "license": "por confirmar",
-            "terms_url": None,
+            "license": source.get("license") or "por confirmar",
+            "terms_url": source.get("terms_url"),
         }
         metadata_path = release_dir / "metadata.json"
         metadata_path.write_text(
@@ -218,13 +281,7 @@ def main() -> int:
     try:
         source = load_source(args.source_id)
         if args.list_releases:
-            request = Request(source["landing_url"], headers={"User-Agent": USER_AGENT})
-            with urlopen(request, timeout=60, context=tls_context()) as response:
-                html = response.read().decode(
-                    response.headers.get_content_charset() or "utf-8", errors="replace"
-                )
-                candidates = release_candidates(html, response.geturl())
-            for candidate in candidates:
+            for candidate in list_candidates(source):
                 print(f"{candidate.release_id}\t{candidate.url}")
             return 0
 

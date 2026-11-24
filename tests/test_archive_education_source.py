@@ -61,6 +61,44 @@ class EducationArchiverTests(unittest.TestCase):
         self.assertEqual([candidate.release_id for candidate in candidates], ["2025", "2024"])
         self.assertEqual(candidates[0].extension, ".rar")
 
+    def test_link_pattern_selects_one_file_per_year(self):
+        html = """
+        <a href="/u/PAES-2026-Inscritos-Puntajes.rar">puntajes</a>
+        <a href="/u/PAES-2026-Postulantes.rar">postulantes</a>
+        <a href="/u/PAES_2025_Inscritos_Puntajes.rar">puntajes</a>
+        """
+        candidates = archiver.release_candidates(html, "https://example.test/", r"Inscritos[-_]Puntajes")
+        self.assertEqual(
+            [candidate.url for candidate in candidates],
+            ["https://example.test/u/PAES-2026-Inscritos-Puntajes.rar", "https://example.test/u/PAES_2025_Inscritos_Puntajes.rar"],
+        )
+
+    def test_agency_rest_listing_resolves_yearly_bundles(self):
+        listing = {
+            "success": True,
+            "data": [
+                {"nombre": "Simce 2025 - Todos los grados", "uuid": "a;1.0"},
+                {"nombre": "Simce 2do medio 2025.rar", "uuid": "b;1.0"},
+                {"nombre": "Simce 2024.rar", "uuid": "c;1.0"},
+                {"nombre": "IDPS 2025.rar", "uuid": "d;1.0"},
+            ],
+        }
+        candidates = archiver.agency_candidates(
+            listing, "https://agency.test/rest/", r"^Simce (?P<year>\d{4})(\.rar| - Todos los grados.*)?$"
+        )
+        self.assertEqual([candidate.release_id for candidate in candidates], ["2025", "2024"])
+        self.assertEqual(candidates[0].url, "https://agency.test/rest/archivo/obtener?uuid=a;1.0")
+        self.assertEqual(candidates[0].extension, ".rar")
+
+    def test_metadata_records_catalog_license(self):
+        source = {"id": "s", "landing_url": "https://example.test/", "license": "CC BY", "terms_url": "https://example.test/terms"}
+        candidate = archiver.ReleaseCandidate("https://example.test/f-2025.zip", "2025", ".zip")
+        with TemporaryDirectory() as directory:
+            with patch.object(archiver, "urlopen", return_value=FakeResponse(b"x", candidate.url)):
+                release_dir, _ = archiver.archive_release(source, candidate, Path(directory))
+            metadata = json.loads((release_dir / "metadata.json").read_text())
+        self.assertEqual((metadata["license"], metadata["terms_url"]), ("CC BY", "https://example.test/terms"))
+
     def test_archive_is_idempotent_and_records_provenance(self):
         source = {
             "id": "mineduc_school_directory",
