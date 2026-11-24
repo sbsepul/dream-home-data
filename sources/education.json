@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "catalog_id": "dream-home-education-cl",
-  "updated_at": "2026-08-14",
+  "updated_at": "2026-11-24",
   "scope": "Fuentes que permiten describir, localizar o evaluar establecimientos escolares e instituciones/sedes de educacion superior en Chile.",
   "status_values": {
     "ready": "Descarga publica y utilizable; aun debe resolverse la URL de cada release.",
@@ -59,10 +59,12 @@
       "join_keys": ["COD_SOSTENEDOR", "RUT_SOSTENEDOR"],
       "cadence": "annual",
       "formats": ["CSV", "RAR"],
-      "license_status": "review_required",
+      "license_status": "explicit_cc_by",
       "signals": ["nombre_sostenedor", "tipo_persona", "comuna", "cantidad_establecimientos"],
       "priority": "P1",
-      "notes": "El RUT no debe exponerse en la interfaz; usar codigo interno y nombre oficial."
+      "notes": "El RUT no debe exponerse en la interfaz; usar codigo interno y nombre oficial.",
+      "terms_url": "https://datos.gob.cl/dataset/directorio-oficial-de-sostenedores",
+      "license": "CC BY (datos.gob.cl)"
     },
     {
       "id": "mineduc_enrollment_school_summary",
@@ -76,10 +78,12 @@
       "join_keys": ["RBD"],
       "cadence": "annual",
       "formats": ["CSV", "RAR"],
-      "license_status": "review_required",
+      "license_status": "explicit_cc_by",
       "signals": ["matricula_total", "matricula_por_sexo", "matricula_por_nivel", "matricula_por_modalidad"],
       "priority": "P0",
-      "notes": "Preferir el resumen agregado para producto; no se necesitan filas de estudiantes."
+      "notes": "Preferir el resumen agregado para producto; no se necesitan filas de estudiantes.",
+      "terms_url": "https://datos.gob.cl/dataset/resumen-de-matricula-por-establecimiento",
+      "license": "CC BY (datos.gob.cl)"
     },
     {
       "id": "mineduc_enrollment_education_unit",
@@ -161,10 +165,12 @@
       "join_keys": ["RBD"],
       "cadence": "annual",
       "formats": ["CSV", "RAR"],
-      "license_status": "review_required",
+      "license_status": "non_commercial",
       "signals": ["cantidad_docentes", "horas_contrato", "funciones", "formacion"],
       "priority": "P1",
-      "notes": "Permite indicadores de dotacion; no inferir calidad docente a partir del conteo."
+      "notes": "Permite indicadores de dotacion; no inferir calidad docente a partir del conteo.",
+      "terms_url": "https://datos.gob.cl/dataset/dotacion-docente-por-establecimiento",
+      "license": "CC BY-NC (datos.gob.cl)"
     },
     {
       "id": "mineduc_assistants_summary",
@@ -178,10 +184,12 @@
       "join_keys": ["RBD"],
       "cadence": "annual",
       "formats": ["CSV", "RAR"],
-      "license_status": "review_required",
+      "license_status": "explicit_cc_by",
       "signals": ["cantidad_asistentes", "estamento", "funcion"],
       "priority": "P2",
-      "notes": "Complementa la dotacion; mostrar solo agregados."
+      "notes": "Complementa la dotacion; mostrar solo agregados.",
+      "terms_url": "https://datos.gob.cl/dataset/resumen-de-asistentes-de-la-educacion-por-establecimiento",
+      "license": "CC BY (datos.gob.cl)"
     },
     {
       "id": "mineduc_sep_priority_summary",
@@ -195,10 +203,12 @@
       "join_keys": ["RBD"],
       "cadence": "annual",
       "formats": ["CSV", "RAR"],
-      "license_status": "review_required",
+      "license_status": "explicit_cc_by",
       "signals": ["prioritarios", "preferentes", "beneficiarios_sep"],
       "priority": "P1",
-      "notes": "Indicador contextual, no de calidad. Publicar porcentajes agregados y evitar etiquetas estigmatizantes."
+      "notes": "Indicador contextual, no de calidad. Publicar porcentajes agregados y evitar etiquetas estigmatizantes.",
+      "terms_url": "https://datos.gob.cl/dataset/estudiantes-subvencion-escolar-preferencial-sep",
+      "license": "CC BY (datos.gob.cl)"
     },
     {
       "id": "mineduc_subsidies",
@@ -212,10 +222,12 @@
       "join_keys": ["RBD"],
       "cadence": "periodic",
       "formats": ["CSV", "RAR"],
-      "license_status": "review_required",
+      "license_status": "explicit_cc_by",
       "signals": ["tipo_subvencion", "monto", "periodo"],
       "priority": "P2",
-      "notes": "Util para transparencia y contexto financiero; no convertir montos brutos en ranking."
+      "notes": "Util para transparencia y contexto financiero; no convertir montos brutos en ranking.",
+      "terms_url": "https://datos.gob.cl/dataset/subvenciones-a-establecimientos-educacionales",
+      "license": "CC BY (datos.gob.cl)"
     },
     {
       "id": "mineduc_shared_financing",
@@ -267,7 +279,12 @@
       "license_status": "review_required",
       "signals": ["puntaje_promedio", "variacion", "significancia", "niveles_aprendizaje", "sexo", "GSE", "dependencia"],
       "priority": "P0",
-      "notes": "Disponibilidad documentada 1998-2024 y resultados 2025 publicados. No comparar pruebas de distinto grado/asignatura como si fueran una sola escala."
+      "notes": "Disponibilidad documentada 1998-2024 y resultados 2025 publicados. No comparar pruebas de distinto grado/asignatura como si fueran una sola escala. El portal publica su catálogo en rest/archivo/getAllByTipo/0; el release anual 'Todos los grados' contiene un RAR por grado con CSV por RBD.",
+      "release_resolver": {
+        "kind": "agency_rest",
+        "api_url": "https://informacionestadistica.agenciaeducacion.cl/rest",
+        "name_pattern": "^Simce (?P<year>\\d{4})(\\.rar| - Todos los grados.*)?$"
+      }
     },
     {
       "id": "agency_idps",
@@ -285,7 +302,12 @@
       "license_status": "review_required",
       "signals": ["autoestima_motivacion", "clima_convivencia", "participacion_ciudadania", "habitos_vida_saludable", "variacion", "significancia"],
       "priority": "P0",
-      "notes": "Disponibilidad documentada desde 2014. Mantener dimensiones por separado."
+      "notes": "Disponibilidad documentada desde 2014. Mantener dimensiones por separado. La dimensión 23 'Ambiente seguro' del indicador Clima de Convivencia Escolar es la señal pública de seguridad percibida por estudiantes.",
+      "release_resolver": {
+        "kind": "agency_rest",
+        "api_url": "https://informacionestadistica.agenciaeducacion.cl/rest",
+        "name_pattern": "^IDPS (?P<year>\\d{4})(\\.rar| - Proceso Completo)?$"
+      }
     },
     {
       "id": "agency_performance_category",
@@ -303,7 +325,31 @@
       "license_status": "review_required",
       "signals": ["categoria_desempeno", "motivo_sin_categoria"],
       "priority": "P1",
-      "notes": "La documentacion publica consultada registra disponibilidad 2016-2019; no asumir continuidad."
+      "notes": "La documentacion publica consultada registra disponibilidad 2016-2019; no asumir continuidad. Verificado 2026-11-24: el portal sólo lista categorías 2016-2019."
+    },
+    {
+      "id": "mineduc_paes_scores",
+      "provider": "MINEDUC (datos DEMRE)",
+      "segment": "school",
+      "name": "PAES: inscritos y puntajes (base anonimizada por participante)",
+      "landing_url": "https://datosabiertos.mineduc.cl/pruebas-de-admision-a-la-educacion-superior/",
+      "documentation_url": "https://datos.gob.cl/dataset/pruebas-de-admision-a-la-educacion-superior",
+      "status": "ready",
+      "access": "public_download",
+      "release_resolver": {
+        "kind": "html_links",
+        "link_pattern": "Inscritos[-_]Puntajes"
+      },
+      "grain": "participante anonimizado (MRUN) por proceso de admisión, con RBD de egreso",
+      "join_keys": ["RBD", "CODIGO_ENS"],
+      "cadence": "per_admission_process",
+      "formats": ["RAR", "CSV"],
+      "license_status": "explicit_cc_by",
+      "license": "CC BY (datos.gob.cl)",
+      "terms_url": "https://datos.gob.cl/dataset/pruebas-de-admision-a-la-educacion-superior",
+      "signals": ["ptje_nem", "ptje_ranking", "promedio_notas", "competencia_lectora", "matematica_m1", "matematica_m2", "ciencias", "historia"],
+      "priority": "P0",
+      "notes": "Alternativa operativa a demre_open_data (portaldemre no respondió el 2026-11-24). Filas individuales: se agregan por RBD sólo para la cohorte egresada el año anterior al proceso y con umbral mínimo de participantes; nunca se publica una fila."
     },
     {
       "id": "demre_paes_school_reports",
@@ -362,17 +408,23 @@
       "provider": "Superintendencia de Educacion",
       "segment": "school",
       "name": "Denuncias",
-      "landing_url": "https://datos.gob.cl/organization/superintendencia-de-educacion",
-      "status": "review_required",
+      "landing_url": "https://www.supereduc.cl/denuncias-ingresadas/",
+      "status": "ready",
       "access": "public_download",
-      "grain": "denuncia desde 2014",
-      "join_keys": ["RBD_if_present", "COD_COM"],
+      "grain": "denuncia ciudadana con RBD del establecimiento denunciado (97% de 2025)",
+      "join_keys": ["RBD", "EE_COD_COMUNA"],
       "cadence": "periodic",
-      "formats": ["CSV"],
+      "formats": ["ZIP", "CSV", "XLSX"],
       "license_status": "explicit_cc_by",
-      "signals": ["materia", "estado", "fecha", "territorio"],
+      "signals": ["denuncias_por_ambito", "maltrato", "connotacion_sexual", "seguridad_higiene", "estado"],
       "priority": "P2",
-      "notes": "Confirmar que el release conserve RBD. Normalizar por matricula y ventana temporal; mayor volumen puede reflejar mayor conocimiento del canal de denuncia."
+      "notes": "Verificado 2026-11-24: un ZIP anual con CSV ';' y diccionario DEN_ER. Contiene MRUN enmascarados de denunciante y afectado: sólo se agregan conteos por RBD y año, nunca filas. Normalizar por matrícula; más denuncias también puede reflejar mayor uso del canal.",
+      "release_resolver": {
+        "kind": "html_links",
+        "link_pattern": "^(DEN_|Denuncias-)\\d{4}\\.zip$"
+      },
+      "license": "CC BY (datos.gob.cl, dataset 'denuncias')",
+      "terms_url": "https://datos.gob.cl/dataset/denuncias"
     },
     {
       "id": "supereduc_mediations",
