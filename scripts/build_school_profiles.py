@@ -23,6 +23,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import unicodedata
 import xml.etree.ElementTree as ET
 import zipfile
 from collections import Counter, defaultdict
@@ -99,6 +100,46 @@ COMPLAINT_TOPICS = {
     "connotacion_sexual": ("SITUACIONES DE CONNOTACIÓN SEXUAL",),
     "discriminacion": ("DISCRIMINACIÓN",),
 }
+
+
+# Idiomas por nombre de asignatura (texto en mayúsculas y sin tildes). «Franciscana»
+# o «Latinoamericana» no deben contar como francés o latín.
+FOREIGN_LANGUAGES = {
+    "ingles": re.compile(r"INGLES|\bENGLISH\b"),
+    "aleman": re.compile(r"\bALEMAN\b|DEUTSCH"),
+    "frances": re.compile(r"\bFRANCES\b|FRANCAIS"),
+    "italiano": re.compile(r"\bITALIANO\b"),
+    "chino_mandarin": re.compile(r"MANDARIN|\bCHINO\b"),
+    "japones": re.compile(r"\bJAPONES\b"),
+    "hebreo": re.compile(r"\bHEBREO\b"),
+    "portugues": re.compile(r"\bPORTUGUES\b"),
+    "latin": re.compile(r"\bLATIN\b"),
+}
+INDIGENOUS_LANGUAGES = {
+    "mapuzugun": re.compile(r"MAPUZUGUN|MAPUDUNGUN|MAPUCHE"),
+    "aymara": re.compile(r"\bAYMARA\b"),
+    "quechua": re.compile(r"\bQUECHUA\b"),
+    "rapa_nui": re.compile(r"RAPA ?NUI"),
+    "kawesqar": re.compile(r"KAWES"),
+    "yagan": re.compile(r"\bYAGAN\b"),
+    "likan_antai": re.compile(r"LIKAN|KUNZA"),
+    "pueblos_originarios": re.compile(r"PUEBLOS ORIGINARIOS|PPOOAA|LENGUA INDIGENA|INTERCULTURALIDAD|EDUCACION INTERCULTURAL"),
+}
+# El inglés es obligatorio en el currículo nacional desde 5° básico.
+ENGLISH_MANDATORY_FROM = "5B"
+# Pistas en el nombre del colegio (sin tildes, mayúsculas).
+NAME_LANGUAGE_HINTS = {
+    "ingles": re.compile(r"\b(ENGLISH|BRITISH|AMERICAN|SCHOOL|COLLEGE|ACADEMY)\b"),
+    "aleman": re.compile(r"\b(ALEMAN|DEUTSCHE|SCHULE)\b"),
+    "frances": re.compile(r"\b(LYCEE|FRANCES|FRANCAIS|ALLIANCE)\b"),
+    "italiano": re.compile(r"\b(SCUOLA|ITALIANA|ITALIANO)\b"),
+    "hebreo": re.compile(r"\b(HEBREO|HEBREW)\b"),
+}
+
+
+def fold_upper(text: str | None) -> str:
+    text = unicodedata.normalize("NFKD", text or "")
+    return "".join(char for char in text if not unicodedata.combining(char)).upper()
 
 
 class BuildError(RuntimeError):
@@ -684,6 +725,75 @@ def paes_profiles(rows: Iterable[dict[str, str]], minimum: int = MIN_PAES_PARTIC
     return profiles
 
 
+def language_profiles(rows: Iterable[dict[str, str]]) -> dict[int, dict]:
+    """Idiomas que el colegio dicta en cursos regulares de niños y jóvenes.
+
+    Viene de «Docentes por curso y subsector»: cada fila es una asignatura de un
+    curso. Se agregan asignaturas y grados por RBD; no se guarda ningún docente.
+    """
+    english_grades: dict[int, set[str]] = defaultdict(set)
+    english_subjects_by_grade: dict[int, dict[str, set[str]]] = defaultdict(lambda: defaultdict(set))
+    foreign: dict[int, set[str]] = defaultdict(set)
+    indigenous: dict[int, set[str]] = defaultdict(set)
+    own_plan: dict[int, bool] = defaultdict(bool)
+    seen: set[int] = set()
+    for row in rows:
+        rbd, ense, grade = to_int(row.get("RBD")), to_int(row.get("COD_ENSE")), to_int(row.get("COD_GRADO"))
+        if rbd is None or ense is None or grade is None:
+            continue
+        label = _grade_label(ense, grade)
+        if not label:
+            continue
+        seen.add(rbd)
+        if to_int(row.get("TIPO_PLAN_EST")) == 1:
+            own_plan[rbd] = True
+        subject = fold_upper(row.get("NOM_SUBSECTOR"))
+        for language, pattern in FOREIGN_LANGUAGES.items():
+            if pattern.search(subject):
+                if language == "ingles":
+                    english_grades[rbd].add(label)
+                    english_subjects_by_grade[rbd][label].add(subject)
+                else:
+                    foreign[rbd].add(language)
+        for language, pattern in INDIGENOUS_LANGUAGES.items():
+            if pattern.search(subject):
+                indigenous[rbd].add(language)
+    profiles = {}
+    mandatory_index = GRADE_ORDER.index(ENGLISH_MANDATORY_FROM)
+    for rbd in seen:
+        grades = [grade for grade in GRADE_ORDER if grade in english_grades[rbd]]
+        specific = sorted(indigenous[rbd] - {"pueblos_originarios"})
+        profiles[rbd] = {
+            "ingles": bool(grades),
+            "ingles_grados": grades,
+            "ingles_desde": grades[0] if grades else None,
+            "ingles_temprano": bool(grades) and GRADE_ORDER.index(grades[0]) < mandatory_index,
+            "ingles_intensivo": any(len(subjects) >= 2 for subjects in english_subjects_by_grade[rbd].values()),
+            "otros_idiomas": sorted(foreign[rbd]),
+            "lengua_indigena": specific or (["pueblos_originarios"] if indigenous[rbd] else []),
+            "plan_propio": own_plan[rbd],
+        }
+    return profiles
+
+
+def name_language_hints(name: str | None) -> list[str]:
+    """Idiomas que sugiere el nombre del colegio («Deutsche Schule», «Lycée»)."""
+    folded = fold_upper(name)
+    return [language for language, pattern in NAME_LANGUAGE_HINTS.items() if pattern.search(folded)]
+
+
+def website_signals(path: Path) -> dict[int, dict]:
+    """Señales bilingües detectadas en los sitios rastreados por collect_school_fees."""
+    if not path.is_file():
+        return {}
+    data = json.loads(path.read_text(encoding="utf-8"))
+    return {
+        school["rbd"]: school["idiomas_sitio"]
+        for school in data.get("colegios", [])
+        if school.get("confianza_sitio") == "alta" and school.get("idiomas_sitio")
+    }
+
+
 def complaint_profiles(rows: Iterable[dict[str, str]]) -> dict[int, dict]:
     counts: dict[int, Counter] = defaultdict(Counter)
     year = None
@@ -731,6 +841,9 @@ def assemble(
     idps_year: int | None = None,
     paes: dict[int, dict] | None = None,
     complaints: dict[int, dict] | None = None,
+    languages: dict[int, dict] | None = None,
+    languages_year: int | None = None,
+    websites: dict[int, dict] | None = None,
 ) -> list[dict]:
     schools = []
     for rbd in sorted(directory):
@@ -777,6 +890,14 @@ def assemble(
             complaint = complaint or {"anio": results_year, "total": 0, "convivencia": 0, "maltrato": 0, "connotacion_sexual": 0, "discriminacion": 0, "seguridad_higiene": 0, "infraestructura": 0}
             complaint = {**complaint, "matricula_base": denominator, "por_100_estudiantes": ratio_pct(complaint["total"], denominator)}
         school["denuncias"] = complaint
+        language = (languages or {}).get(rbd)
+        hints = name_language_hints(school["nombre"])
+        site = (websites or {}).get(rbd)
+        school["idiomas"] = (
+            {"anio": languages_year if language else None, **(language or {}), "nombre_sugiere": hints, "sitio": site}
+            if language or hints or site
+            else None
+        )
         schools.append(school)
     return schools
 
@@ -849,6 +970,15 @@ def flat_record(school: dict) -> dict:
         "denuncias_convivencia": complaints.get("convivencia"),
         "denuncias_por_100": complaints.get("por_100_estudiantes"),
         "pie": school["programas"]["pie"],
+        "ingles": (school.get("idiomas") or {}).get("ingles"),
+        "ingles_desde": (school.get("idiomas") or {}).get("ingles_desde"),
+        "ingles_temprano": (school.get("idiomas") or {}).get("ingles_temprano"),
+        "ingles_intensivo": (school.get("idiomas") or {}).get("ingles_intensivo"),
+        "otros_idiomas": ",".join((school.get("idiomas") or {}).get("otros_idiomas") or []),
+        "lengua_indigena": ",".join((school.get("idiomas") or {}).get("lengua_indigena") or []),
+        "plan_propio": (school.get("idiomas") or {}).get("plan_propio"),
+        "bilingue_sitio": ((school.get("idiomas") or {}).get("sitio") or {}).get("bilingue"),
+        "ib_sitio": ((school.get("idiomas") or {}).get("sitio") or {}).get("bachillerato_internacional"),
     }
 
 
@@ -876,6 +1006,11 @@ def coverage(schools: list[dict]) -> dict:
             "simce": share(scholar, lambda s: s.get("simce")),
             "idps_ambiente_seguro": share(scholar, lambda s: (s.get("idps") or {}).get("ambiente_seguro")),
             "denuncias_al_menos_una": share(scholar, lambda s: (s.get("denuncias") or {}).get("total")),
+            "asignaturas_idiomas": share(scholar, lambda s: (s.get("idiomas") or {}).get("anio")),
+            "ingles": share(scholar, lambda s: (s.get("idiomas") or {}).get("ingles")),
+            "ingles_temprano": share(scholar, lambda s: (s.get("idiomas") or {}).get("ingles_temprano")),
+            "otro_idioma_extranjero": share(scholar, lambda s: (s.get("idiomas") or {}).get("otros_idiomas")),
+            "lengua_indigena": share(scholar, lambda s: (s.get("idiomas") or {}).get("lengua_indigena")),
         },
         "cobertura_con_media": {
             "paes_no_suprimida": share(with_media, lambda s: (s.get("paes") or {}).get("promedio_nem") is not None),
@@ -922,7 +1057,7 @@ def _require(archive_root: Path, source_id: str, release_id: str | None = None) 
     return release
 
 
-def build(archive_root: Path, output_root: Path, cache_root: Path) -> tuple[list[dict], dict]:
+def build(archive_root: Path, output_root: Path, cache_root: Path, fees_path: Path | None = None) -> tuple[list[dict], dict]:
     used: dict[str, Release] = {}
 
     def load(source_id: str, release_id: str | None = None, optional: bool = False) -> Path | None:
@@ -973,6 +1108,10 @@ def build(archive_root: Path, output_root: Path, cache_root: Path) -> tuple[list
     complaints_dir = load("supereduc_complaints", str(results_year), optional=True)
     complaints = complaint_profiles(read_csv(find_file(complaints_dir, r"DENUNCIAS_\d{4}.*\.csv$"))) if complaints_dir else None
 
+    subjects_dir = load("mineduc_teachers_by_course_subject", str(results_year), optional=True)
+    languages = language_profiles(read_csv(find_file(subjects_dir, r"Docentes_por_curso.*\.csv$"))) if subjects_dir else None
+    websites = website_signals(fees_path) if fees_path else {}
+
     def year_of(source_id: str) -> int | None:
         release = used.get(source_id)
         return int(release.metadata.get("upstream_release_id") or release.release_id) if release else None
@@ -993,6 +1132,9 @@ def build(archive_root: Path, output_root: Path, cache_root: Path) -> tuple[list
         idps_year=year_of("agency_idps"),
         paes=paes,
         complaints=complaints,
+        languages=languages,
+        languages_year=year_of("mineduc_teachers_by_course_subject"),
+        websites=websites,
     )
     manifest = {
         "schema_version": SCHEMA_VERSION,
@@ -1011,6 +1153,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--archive-root", type=Path, default=DEFAULT_ARCHIVE_ROOT)
     parser.add_argument("--output-root", type=Path, default=DEFAULT_OUTPUT_ROOT)
     parser.add_argument("--cache-root", type=Path, help="dónde extraer los releases (por defecto un directorio temporal)")
+    parser.add_argument("--fees", type=Path, default=DEFAULT_OUTPUT_ROOT / "fees" / "aranceles.json", help="resultado de collect_school_fees.py, para las señales de idiomas de los sitios")
     return parser.parse_args()
 
 
@@ -1019,7 +1162,7 @@ def main() -> int:
     try:
         with tempfile.TemporaryDirectory(prefix="school-profiles-") as temporary:
             cache_root = args.cache_root or Path(temporary)
-            schools, manifest = build(args.archive_root, args.output_root, cache_root)
+            schools, manifest = build(args.archive_root, args.output_root, cache_root, args.fees)
             paths = write_outputs(schools, manifest, args.output_root)
     except (BuildError, OSError, ValueError, subprocess.CalledProcessError, zipfile.BadZipFile) as error:
         print(f"FAIL {error}", file=sys.stderr)

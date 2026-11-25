@@ -225,6 +225,46 @@ class SimceIdpsTests(unittest.TestCase):
         self.assertEqual(profile["ambiente_seguro"], {"2M": 74.0})
 
 
+class LanguageTests(unittest.TestCase):
+    def subject(self, ense, grade, name, plan="0", rbd="100"):
+        return {"RBD": rbd, "COD_ENSE": str(ense), "COD_GRADO": str(grade), "NOM_SUBSECTOR": name, "TIPO_PLAN_EST": plan, "MRUN": "999"}
+
+    def test_english_grades_early_start_and_intensity(self):
+        rows = [self.subject(110, 1, "INGLÉS 1° BÁSICO"), self.subject(110, 1, "TALLER DE INGLÉS"), self.subject(110, 5, "IDIOMA EXTRANJERO: INGLÉS"), self.subject(310, 1, "IDIOMA EXTRANJERO (INGLÉS)")]
+        profile = builder.language_profiles(rows)[100]
+        self.assertEqual(profile["ingles_grados"], ["1B", "5B", "1M"])
+        self.assertEqual(profile["ingles_desde"], "1B")
+        self.assertTrue(profile["ingles_temprano"])
+        self.assertTrue(profile["ingles_intensivo"])
+
+    def test_mandatory_english_only_is_not_early(self):
+        profile = builder.language_profiles([self.subject(110, 5, "IDIOMA EXTRANJERO: INGLES")])[100]
+        self.assertFalse(profile["ingles_temprano"])
+        self.assertFalse(profile["ingles_intensivo"])
+
+    def test_other_and_indigenous_languages_without_false_friends(self):
+        rows = [
+            self.subject(110, 3, "IDIOMA EXTRANJERO (ALEMÁN)", plan="1"),
+            self.subject(110, 3, "CULTURA RELIGIOSA FRANCISCANA"),
+            self.subject(310, 2, "CHILE Y LA REGIÓN LATINOAMERICANA"),
+            self.subject(110, 2, "LENGUA INDÍGENA: MAPUZUGUN"),
+            self.subject(110, 2, "LENGUA Y LITERATURA"),
+        ]
+        profile = builder.language_profiles(rows)[100]
+        self.assertEqual(profile["otros_idiomas"], ["aleman"])
+        self.assertEqual(profile["lengua_indigena"], ["mapuzugun"])
+        self.assertTrue(profile["plan_propio"])
+        self.assertFalse(profile["ingles"])
+
+    def test_adult_courses_are_ignored(self):
+        self.assertEqual(builder.language_profiles([self.subject(363, 1, "INGLÉS")]), {})
+
+    def test_name_hints(self):
+        self.assertEqual(builder.name_language_hints("DEUTSCHE SCHULE SANTIAGO"), ["aleman"])
+        self.assertEqual(builder.name_language_hints("LYCÉE ANTOINE DE SAINT-EXUPÉRY"), ["frances"])
+        self.assertEqual(builder.name_language_hints("LICEO BICENTENARIO"), [])
+
+
 class ReleaseTests(unittest.TestCase):
     def test_latest_release_wins_and_revision_beats_original(self):
         with TemporaryDirectory() as temporary:

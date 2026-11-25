@@ -755,6 +755,37 @@ def fetch_uf(today: datetime) -> float:
     return parse_uf(fetched.body.decode("latin-1"), today)
 
 
+SITE_SIGNALS = {
+    "bilingue": re.compile(r"\bbiling[uü]e|\bbilingual\b|\bbicultural\b|inmersi[oó]n en (?:ingl|alem|franc)"),
+    "bachillerato_internacional": re.compile(r"bachillerato internacional|international baccalaureate|\bib world school|programa del diploma del ib|\bib diploma"),
+    "cambridge": re.compile(r"cambridge (?:assessment|international|english|school)|\bigcse\b"),
+}
+# Un idioma cuenta sólo si aparece como enseñanza, no en una mención cualquiera.
+SITE_LANGUAGES = {
+    "ingles": r"ingl[eé]s",
+    "aleman": r"alem[aá]n",
+    "frances": r"franc[eé]s",
+    "italiano": r"italiano",
+    "chino_mandarin": r"mandar[ií]n|chino mandar",
+    "portugues": r"portugu[eé]s",
+    "japones": r"japon[eé]s",
+    "hebreo": r"hebreo",
+}
+TEACHING_CONTEXT = r"(?:clases? de|idioma|lengua|asignatura|aprend\w*|ense[nñ]\w*|curso de|programa de|segundo idioma|tercer idioma)"
+
+
+def website_language_signals(texts: list[str]) -> dict | None:
+    folded = " ".join(fold(text) for text in texts)
+    signals = {key: bool(pattern.search(folded)) for key, pattern in SITE_SIGNALS.items()}
+    languages = sorted(
+        language for language, word in SITE_LANGUAGES.items()
+        if re.search(rf"{TEACHING_CONTEXT}\W+(?:\w+\W+){{0,3}}{fold(word)}|{fold(word)}\W+(?:\w+\W+){{0,2}}como (?:segundo|tercer) idioma", folded)
+    )
+    if not any(signals.values()) and not languages:
+        return None
+    return {**signals, "idiomas_mencionados": languages}
+
+
 def mentions_comuna(texts: list[str], comuna: str | None) -> bool:
     if not comuna:
         return False
@@ -812,6 +843,7 @@ def command_extract(args: argparse.Namespace) -> int:
                     "error": document.get("error"),
                 })
             record["comuna_en_sitio"] = mentions_comuna(texts, site["comuna"])
+            record["idiomas_sitio"] = website_language_signals(texts)
             record["confianza_sitio"] = site_confidence(site, record["comuna_en_sitio"]) if record["paginas"] else None
             record["montos"] = summarize_school(mentions)
             record["menciones"] = [mention.__dict__ for mention in mentions[:40]]

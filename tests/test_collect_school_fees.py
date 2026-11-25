@@ -146,6 +146,15 @@ class UfTests(unittest.TestCase):
         self.assertEqual(fees.parse_uf(page, fees.datetime(2026, 11, 24)), 41398.57)
 
 
+class WebsiteLanguageTests(unittest.TestCase):
+    def test_signals_require_teaching_context(self):
+        signals = fees.website_language_signals(["Colegio bilingüe con Bachillerato Internacional. Clases de alemán desde 5° básico.", "Fundado por franceses"])
+        self.assertEqual(signals, {"bilingue": True, "bachillerato_internacional": True, "cambridge": False, "idiomas_mencionados": ["aleman"]})
+
+    def test_no_signals_returns_none(self):
+        self.assertIsNone(fees.website_language_signals(["Bienvenidos a nuestro colegio"]))
+
+
 class CrawlHelperTests(unittest.TestCase):
     def test_parse_html_reads_links_text_and_skips_scripts(self):
         title, text, links = fees.parse_html('<title>Colegio</title><script>var x="Matrícula $1"</script><a href="/admision">Admisión 2026</a>', "https://c.cl/")
