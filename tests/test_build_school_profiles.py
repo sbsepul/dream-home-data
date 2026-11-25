@@ -311,6 +311,10 @@ class EndToEndTests(unittest.TestCase):
             self.assertEqual(school["denuncias"]["por_100_estudiantes"], 0.2)
             self.assertEqual(manifest["anio_resultados"], 2025)
             self.assertIn("mineduc_school_directory:2025", manifest["fuentes"])
+            web = json.loads(paths["web"].read_text(encoding="utf-8"))
+            self.assertEqual(web["colegios"][0]["rbd"], 100)
+            self.assertEqual(web["colegios"][0]["paesNem"], 700.0)
+            self.assertNotIn("mensualidadMaxClp", web["colegios"][0])
             geojson = json.loads(paths["geojson"].read_text(encoding="utf-8"))
             self.assertEqual(geojson["features"][0]["geometry"]["coordinates"], [-70.61, -33.43])
             for path in paths.values():

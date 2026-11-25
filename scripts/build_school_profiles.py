@@ -782,6 +782,30 @@ def name_language_hints(name: str | None) -> list[str]:
     return [language for language, pattern in NAME_LANGUAGE_HINTS.items() if pattern.search(folded)]
 
 
+def published_fees(path: Path) -> dict[int, dict]:
+    """Matrícula y mensualidad publicadas en sitios confirmados (collect_school_fees.py)."""
+    if not path.is_file():
+        return {}
+    fees = {}
+    for school in json.loads(path.read_text(encoding="utf-8")).get("colegios", []):
+        amounts = school.get("montos") or {}
+        if school.get("confianza_sitio") != "alta" or not amounts:
+            continue
+        monthly = amounts.get("mensualidad") or amounts.get("mensualidad_derivada") or {}
+        enrollment = amounts.get("matricula") or {}
+        if not monthly and not enrollment:
+            continue
+        fees[school["rbd"]] = {
+            "mensualidad_min_clp": monthly.get("min_clp"),
+            "mensualidad_max_clp": monthly.get("max_clp"),
+            "mensualidad_derivada": "mensualidad" not in amounts and bool(monthly),
+            "matricula_max_clp": enrollment.get("max_clp"),
+            "anio": monthly.get("anio") or enrollment.get("anio"),
+            "fuente": (amounts.get("mensualidad") or amounts.get("arancel_anual") or enrollment).get("fuente"),
+        }
+    return fees
+
+
 def website_signals(path: Path) -> dict[int, dict]:
     """Señales bilingües detectadas en los sitios rastreados por collect_school_fees."""
     if not path.is_file():
@@ -844,6 +868,7 @@ def assemble(
     languages: dict[int, dict] | None = None,
     languages_year: int | None = None,
     websites: dict[int, dict] | None = None,
+    fees: dict[int, dict] | None = None,
 ) -> list[dict]:
     schools = []
     for rbd in sorted(directory):
@@ -898,6 +923,7 @@ def assemble(
             if language or hints or site
             else None
         )
+        school["aranceles_publicados"] = (fees or {}).get(rbd)
         schools.append(school)
     return schools
 
@@ -982,6 +1008,52 @@ def flat_record(school: dict) -> dict:
     }
 
 
+def web_record(school: dict) -> dict:
+    """Registro compacto que consume la sección Colegios de la web."""
+    flat = flat_record(school)
+    languages = school.get("idiomas") or {}
+    site = languages.get("sitio") or {}
+    taught = ({"ingles"} if languages.get("ingles") else set()) | set(languages.get("otros_idiomas") or []) | set(languages.get("lengua_indigena") or [])
+    fees = school.get("aranceles_publicados") or {}
+    return {
+        "rbd": school["rbd"],
+        "nombre": (school["nombre"] or "").title(),
+        "regionCodigo": school["region"]["codigo"],
+        "comunaCodigo": school["comuna"]["codigo"],
+        "comuna": (school["comuna"]["nombre"] or "").title(),
+        "lat": round(flat["lat"], 4) if flat["lat"] is not None else None,
+        "lon": round(flat["lon"], 4) if flat["lon"] is not None else None,
+        "rural": school["rural"],
+        "sector": school["dependencia"]["sector"],
+        "dependencia": school["dependencia"]["nombre_oficial"],
+        "grados": flat["grados"],
+        "ciclo1bA4m": bool(flat["imparte_1b_a_4m"]),
+        "matricula": flat["matricula"],
+        "alumnosPorCurso": flat["alumnos_por_curso"],
+        "mensualidadTramo": flat["pago_mensualidad"],
+        "copagoMensualClp": flat["copago_promedio_mensual_clp"],
+        "pctPrioritarios": flat["pct_prioritarios"],
+        "retiroPct": flat["tasa_retiro_pct"],
+        "simce4bLectura": flat["simce_4b_lectura"],
+        "simce4bMatematica": flat["simce_4b_matematica"],
+        "simce2mLectura": flat["simce_2m_lectura"],
+        "simce2mMatematica": flat["simce_2m_matematica"],
+        "paesNem": flat["paes_promedio_nem"],
+        "paesLectoraM1": flat["paes_promedio_cl_m1"],
+        "paesInscritos": flat["paes_inscritos"],
+        "ambienteSeguro": flat["idps_ambiente_seguro_2m"] or flat["idps_ambiente_seguro_8b"] or flat["idps_ambiente_seguro_4b"],
+        "denunciasPor100": flat["denuncias_por_100"],
+        "inglesDesde": languages.get("ingles_desde"),
+        "idiomas": sorted(taught),
+        "bilingue": bool(site.get("bilingue")),
+        "bachilleratoInternacional": bool(site.get("bachillerato_internacional")),
+        "mensualidadMaxClp": fees.get("mensualidad_max_clp"),
+        "mensualidadMinClp": fees.get("mensualidad_min_clp"),
+        "matriculaMaxClp": fees.get("matricula_max_clp"),
+        "arancelesFuente": fees.get("fuente"),
+    }
+
+
 def coverage(schools: list[dict]) -> dict:
     scholar = [school for school in schools if school["es_escolar"]]
     with_media = [school for school in scholar if school["niveles"]["media_hc"] or school["niveles"]["media_tp"]]
@@ -1026,6 +1098,7 @@ def write_outputs(schools: list[dict], manifest: dict, output_root: Path) -> dic
         "csv": output_root / "colegios_perfil.csv",
         "geojson": output_root / "colegios.geojson",
         "manifest": output_root / "colegios_manifest.json",
+        "web": output_root / "colegios_web.json",
     }
     paths["json"].write_text(
         json.dumps({"schema_version": SCHEMA_VERSION, "generated_at": manifest["generated_at"], "colegios": schools}, ensure_ascii=False) + "\n",
@@ -1043,6 +1116,19 @@ def write_outputs(schools: list[dict], manifest: dict, output_root: Path) -> dic
     ]
     paths["geojson"].write_text(json.dumps({"type": "FeatureCollection", "features": features}, ensure_ascii=False) + "\n", encoding="utf-8")
     paths["manifest"].write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    web = {
+        "schemaVersion": SCHEMA_VERSION,
+        "generadoEn": manifest["generated_at"],
+        "anioPerfil": manifest["anio_perfil"],
+        "anioResultados": manifest["anio_resultados"],
+        # Los campos vacíos se omiten: el cliente trata la ausencia como «sin dato».
+        "colegios": [
+            {key: value for key, value in web_record(school).items() if value is not None and value != [] and value is not False}
+            for school in schools
+            if school["es_escolar"]
+        ],
+    }
+    paths["web"].write_text(json.dumps(web, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
     return paths
 
 
@@ -1111,6 +1197,7 @@ def build(archive_root: Path, output_root: Path, cache_root: Path, fees_path: Pa
     subjects_dir = load("mineduc_teachers_by_course_subject", str(results_year), optional=True)
     languages = language_profiles(read_csv(find_file(subjects_dir, r"Docentes_por_curso.*\.csv$"))) if subjects_dir else None
     websites = website_signals(fees_path) if fees_path else {}
+    published = published_fees(fees_path) if fees_path else {}
 
     def year_of(source_id: str) -> int | None:
         release = used.get(source_id)
@@ -1135,6 +1222,7 @@ def build(archive_root: Path, output_root: Path, cache_root: Path, fees_path: Pa
         languages=languages,
         languages_year=year_of("mineduc_teachers_by_course_subject"),
         websites=websites,
+        fees=published,
     )
     manifest = {
         "schema_version": SCHEMA_VERSION,
