@@ -21,6 +21,7 @@ python3 scripts/archive_education_source.py agency_simce
 python3 scripts/archive_education_source.py agency_idps
 python3 scripts/archive_education_source.py mineduc_paes_scores
 python3 scripts/archive_education_source.py supereduc_complaints --release-id 2025
+python3 scripts/archive_education_source.py mineduc_teachers_by_course_subject --release-id 2025
 python3 scripts/build_school_profiles.py
 ```
 
@@ -54,6 +55,8 @@ Productos en `data/build/education/` (fuera de Git, ver «Licencias»):
 | Bienestar y seguridad | IDPS por grado y la dimensión «Ambiente seguro» | Agencia de Calidad 2025 |
 | Egreso | NEM, ranking, notas, Competencia Lectora, M1, CL+M1 y % sobre 600 | PAES admisión 2026, cohorte egresada en 2025 |
 | Denuncias | total, convivencia, maltrato, connotación sexual, discriminación, seguridad e higiene, infraestructura y tasa por 100 estudiantes | Superintendencia de Educación 2025 |
+| Idiomas | grados con inglés, grado de inicio, inglés antes de 5° básico, más de una asignatura de inglés, otros idiomas extranjeros, lenguas indígenas y plan de estudios propio | Docentes por curso y subsector 2025 |
+| Idiomas según el sitio | se declara bilingüe, Bachillerato Internacional, Cambridge e idiomas presentados como clases | Sitios rastreados de particulares pagados ([`SCHOOL_FEES.md`](SCHOOL_FEES.md)) |
 
 ## Definiciones
 
@@ -72,6 +75,16 @@ Productos en `data/build/education/` (fuera de Git, ver «Licencias»):
   (IDPS), de 0 a 100, basada en cuestionarios a estudiantes.
 - **Denuncias:** se cuentan por RBD; los colegios sin denuncias quedan en 0 con
   su denominador. Un volumen mayor también puede reflejar más uso del canal.
+- **Idiomas:** una asignatura cuenta si su nombre informado al MINEDUC menciona
+  el idioma en un curso regular de niños y jóvenes («Idioma extranjero:
+  inglés», «Taller de inglés», «Lengua indígena: mapuzugun»). Se descartan
+  falsos amigos como «Cultura religiosa franciscana» o «Chile y la región
+  latinoamericana». El inglés es obligatorio desde 5° básico, así que
+  `ingles_temprano` marca a quienes empiezan antes. Un colegio bilingüe puede
+  dictar Ciencias o Historia en inglés sin que figuren como inglés, por lo que
+  `ingles_intensivo` (dos o más asignaturas de inglés en un grado) subestima la
+  intensidad. `nombre_sugiere` es sólo una pista del nombre («Deutsche Schule»,
+  «Lycée»).
 - **SIMCE:** sólo es comparable dentro del mismo grado y asignatura. La
   variación y la diferencia por grupo socioeconómico son las publicadas por la
   Agencia (`*_significativa`: −1, 0 o 1).
@@ -92,7 +105,22 @@ subvencionados, 498 particulares pagados y 70 de administración delegada).
 | IDPS «Ambiente seguro» | 7.397 | 89,5 |
 | Al menos una denuncia en 2025 | 4.943 | 59,8 |
 | Copago FICOM (sólo subvencionados que aún cobran) | 662 | 8,0 |
+| Asignaturas informadas (base de idiomas) | 8.251 | 99,8 |
+| Enseñan inglés | 8.080 | 97,8 |
+| Inglés antes de 5° básico | 2.875 | 34,8 |
+| Lengua indígena | 2.004 | 24,2 |
+| Otro idioma extranjero (alemán 34, francés 31, italiano 9, chino mandarín 5, hebreo 2, latín 1) | 75 | 0,9 |
 | PAES no suprimida (base: 3.108 colegios con media) | 2.908 | 93,6 |
+
+Lenguas indígenas: mapuzugun en 1.304 colegios, aymara en 111, quechua en 4,
+rapa nui en 5 y 584 con la asignatura general de lengua y cultura de los
+pueblos originarios.
+
+Idiomas por sector: inglés antes de 5° básico en el 27 % de los públicos, el
+40 % de los subvencionados y el 82 % de los pagados. De los 75 colegios con otro
+idioma extranjero, 55 son particulares pagados. De los pagados con sitio
+confirmado, 67 se declaran bilingües y 17 ofrecen el Bachillerato
+Internacional.
 
 Medianas por sector:
 
