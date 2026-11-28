@@ -35,6 +35,7 @@ from typing import Iterable, Iterator
 ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_ARCHIVE_ROOT = ROOT / "data" / "raw" / "education"
 DEFAULT_OUTPUT_ROOT = ROOT / "data" / "build" / "education"
+REVIEWED_SCHOOL_FEES = ROOT / "sources" / "school-fees-top-paes-rm.json"
 SCHEMA_VERSION = 1
 
 # PAES se publica por participante; bajo este umbral el agregado del colegio se suprime.
@@ -783,7 +784,7 @@ def name_language_hints(name: str | None) -> list[str]:
 
 
 def published_fees(path: Path) -> dict[int, dict]:
-    """Matrícula y mensualidad publicadas en sitios confirmados (collect_school_fees.py)."""
+    """Aranceles publicados en sitios confirmados (collect_school_fees.py)."""
     if not path.is_file():
         return {}
     fees = {}
@@ -793,15 +794,17 @@ def published_fees(path: Path) -> dict[int, dict]:
             continue
         monthly = amounts.get("mensualidad") or amounts.get("mensualidad_derivada") or {}
         enrollment = amounts.get("matricula") or {}
-        if not monthly and not enrollment:
+        admission = amounts.get("incorporacion") or {}
+        if not monthly and not enrollment and not admission:
             continue
         fees[school["rbd"]] = {
             "mensualidad_min_clp": monthly.get("min_clp"),
             "mensualidad_max_clp": monthly.get("max_clp"),
             "mensualidad_derivada": "mensualidad" not in amounts and bool(monthly),
             "matricula_max_clp": enrollment.get("max_clp"),
-            "anio": monthly.get("anio") or enrollment.get("anio"),
-            "fuente": (amounts.get("mensualidad") or amounts.get("arancel_anual") or enrollment).get("fuente"),
+            "incorporacion_max_clp": admission.get("max_clp"),
+            "anio": monthly.get("anio") or enrollment.get("anio") or admission.get("anio"),
+            "fuente": (amounts.get("mensualidad") or amounts.get("arancel_anual") or enrollment or admission).get("fuente"),
         }
     return fees
 
@@ -1008,7 +1011,7 @@ def flat_record(school: dict) -> dict:
     }
 
 
-def web_record(school: dict) -> dict:
+def web_record(school: dict, reviewed_fees: dict | None = None) -> dict:
     """Registro compacto que consume la sección Colegios de la web."""
     flat = flat_record(school)
     languages = school.get("idiomas") or {}
@@ -1049,8 +1052,11 @@ def web_record(school: dict) -> dict:
         "bachilleratoInternacional": bool(site.get("bachillerato_internacional")),
         "mensualidadMaxClp": fees.get("mensualidad_max_clp"),
         "mensualidadMinClp": fees.get("mensualidad_min_clp"),
+        "mensualidadDerivada": fees.get("mensualidad_derivada"),
         "matriculaMaxClp": fees.get("matricula_max_clp"),
+        "incorporacionMaxClp": fees.get("incorporacion_max_clp"),
         "arancelesFuente": fees.get("fuente"),
+        "arancelesRevisados": reviewed_fees,
     }
 
 
@@ -1116,6 +1122,7 @@ def write_outputs(schools: list[dict], manifest: dict, output_root: Path) -> dic
     ]
     paths["geojson"].write_text(json.dumps({"type": "FeatureCollection", "features": features}, ensure_ascii=False) + "\n", encoding="utf-8")
     paths["manifest"].write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    reviewed_fees = json.loads(REVIEWED_SCHOOL_FEES.read_text(encoding="utf-8"))["colegios"]
     web = {
         "schemaVersion": SCHEMA_VERSION,
         "generadoEn": manifest["generated_at"],
@@ -1123,7 +1130,7 @@ def write_outputs(schools: list[dict], manifest: dict, output_root: Path) -> dic
         "anioResultados": manifest["anio_resultados"],
         # Los campos vacíos se omiten: el cliente trata la ausencia como «sin dato».
         "colegios": [
-            {key: value for key, value in web_record(school).items() if value is not None and value != [] and value is not False}
+            {key: value for key, value in web_record(school, reviewed_fees.get(str(school["rbd"]))).items() if value is not None and value != [] and value is not False}
             for school in schools
             if school["es_escolar"]
         ],

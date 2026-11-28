@@ -1,0 +1,789 @@
+{
+  "revisadoEn": "2026-11-24",
+  "nivel": "1° básico",
+  "colegios": {
+    "8862": {
+      "year": 2026,
+      "sources": [
+        "https://seduc.cl/app/uploads/2025/10/VALORES_COLEGIOS-7oct.pdf",
+        "https://seduc.cl/app/uploads/2025/10/Terminos-y-Condiciones-Seduc-2026-version-colegios.pdf"
+      ],
+      "tuitionAnnual": {
+        "amount": 192.1,
+        "currency": "UF"
+      },
+      "installments": 10,
+      "enrollment": {
+        "amount": 16.72,
+        "currency": "UF"
+      },
+      "extras": [
+        {
+          "kind": "incorporacion",
+          "amount": 90,
+          "currency": "UF",
+          "frequency": "entry"
+        }
+      ]
+    },
+    "8867": {
+      "year": 2026,
+      "sources": [
+        "https://www.colegiosanfranciscodeasis.cl/csfda/admision/matriculas-y-aranceles-2024/",
+        "https://drive.google.com/file/d/1BGB_RVXyaXB9moEwJBb-CgEc7ShjazqY/view"
+      ],
+      "tuitionAnnual": {
+        "amount": 178.5,
+        "currency": "UF"
+      },
+      "installments": 10,
+      "enrollment": {
+        "amount": 14.28,
+        "currency": "UF"
+      },
+      "extras": [
+        {
+          "kind": "incorporacion",
+          "amount": 90,
+          "currency": "UF",
+          "frequency": "entry"
+        },
+        {
+          "kind": "alimentacion",
+          "amount": 25.2,
+          "currency": "UF",
+          "frequency": "annual"
+        },
+        {
+          "kind": "seguro",
+          "amount": 2.4,
+          "currency": "UF",
+          "frequency": "annual"
+        },
+        {
+          "kind": "seguroAdicional",
+          "amount": 1.8,
+          "currency": "UF",
+          "frequency": "optional"
+        }
+      ]
+    },
+    "8868": {
+      "year": 2026,
+      "sources": [
+        "https://lagirouette.cl/aranceles-2025/"
+      ],
+      "tuitionMonthly": {
+        "amount": 635900,
+        "currency": "CLP"
+      },
+      "installments": 10,
+      "enrollment": {
+        "amount": 550000,
+        "currency": "CLP",
+        "year": 2027
+      },
+      "extras": [
+        {
+          "kind": "incorporacion",
+          "amount": 73,
+          "currency": "UF",
+          "frequency": "entry"
+        },
+        {
+          "kind": "materiales",
+          "amount": 120000,
+          "currency": "CLP",
+          "frequency": "additional"
+        }
+      ]
+    },
+    "8871": {
+      "year": 2026,
+      "sources": [
+        "https://seduc.cl/app/uploads/2025/10/VALORES_COLEGIOS-7oct.pdf",
+        "https://seduc.cl/app/uploads/2025/10/Terminos-y-Condiciones-Seduc-2026-version-colegios.pdf"
+      ],
+      "tuitionAnnual": {
+        "amount": 192.1,
+        "currency": "UF"
+      },
+      "installments": 10,
+      "enrollment": {
+        "amount": 16.72,
+        "currency": "UF"
+      },
+      "extras": [
+        {
+          "kind": "incorporacion",
+          "amount": 90,
+          "currency": "UF",
+          "frequency": "entry"
+        }
+      ]
+    },
+    "8902": {
+      "year": 2026,
+      "sources": [
+        "https://seduc.cl/app/uploads/2025/10/VALORES_COLEGIOS-7oct.pdf",
+        "https://seduc.cl/app/uploads/2025/10/Terminos-y-Condiciones-Seduc-2026-version-colegios.pdf"
+      ],
+      "tuitionAnnual": {
+        "amount": 192.1,
+        "currency": "UF"
+      },
+      "installments": 10,
+      "enrollment": {
+        "amount": 16.72,
+        "currency": "UF"
+      },
+      "extras": [
+        {
+          "kind": "incorporacion",
+          "amount": 90,
+          "currency": "UF",
+          "frequency": "entry"
+        }
+      ]
+    },
+    "8904": {
+      "year": 2026,
+      "sources": [
+        "https://d6cz7s1bhv1hz.cloudfront.net/wp-content/uploads/2026/01/20100815/Documentacion-e-incorporacion-Admision-2027-2.pdf"
+      ],
+      "tuitionAnnual": {
+        "amount": 186.6,
+        "currency": "UF"
+      },
+      "installments": 10,
+      "enrollment": {
+        "amount": 14.2,
+        "currency": "UF"
+      },
+      "extras": [
+        {
+          "kind": "centroPadres",
+          "amount": 0.8,
+          "currency": "UF",
+          "frequency": "annual"
+        },
+        {
+          "kind": "incorporacion",
+          "amount": 85,
+          "currency": "UF",
+          "frequency": "entry"
+        }
+      ]
+    },
+    "8972": {
+      "year": 2027,
+      "sources": [
+        "https://colegiosanbenito.org/admision-pk/",
+        "https://drive.google.com/file/d/1RLMpx8ZdTp5Xn5Sg_yw6-G8kOf85ydgB/view"
+      ],
+      "tuitionAnnual": {
+        "amount": 193,
+        "currency": "UF"
+      },
+      "installments": 10,
+      "enrollment": {
+        "amount": 16.4,
+        "currency": "UF"
+      },
+      "extras": [
+        {
+          "kind": "incorporacion",
+          "amount": 75,
+          "currency": "UF",
+          "frequency": "entry"
+        }
+      ]
+    },
+    "8998": {
+      "year": 2027,
+      "sources": [
+        "https://cambridgecollege.cl/admision/aranceles-y-matriculas/",
+        "https://cambridgecollege.cl/informacion-util/casino/"
+      ],
+      "tuitionMonthly": {
+        "amount": 514000,
+        "currency": "CLP"
+      },
+      "enrollment": {
+        "amount": 548000,
+        "currency": "CLP"
+      },
+      "extras": [
+        {
+          "kind": "incorporacion",
+          "amount": 32,
+          "currency": "UF",
+          "frequency": "entry"
+        },
+        {
+          "kind": "postulacion",
+          "amount": 40000,
+          "currency": "CLP",
+          "frequency": "entry"
+        },
+        {
+          "kind": "alimentacion",
+          "amount": 917000,
+          "currency": "CLP",
+          "frequency": "optional",
+          "year": 2026
+        }
+      ]
+    },
+    "9046": {
+      "year": 2026,
+      "sources": [
+        "https://grange.cl/es/admisiones/valores-y-costos/"
+      ],
+      "tuitionAnnual": {
+        "amount": 270,
+        "currency": "UF"
+      },
+      "installments": 10,
+      "enrollment": {
+        "amount": 14,
+        "currency": "UF"
+      },
+      "extras": [
+        {
+          "kind": "incorporacion",
+          "amount": 200,
+          "currency": "UF",
+          "frequency": "entry"
+        },
+        {
+          "kind": "postulacion",
+          "amount": 6,
+          "currency": "UF",
+          "frequency": "entry"
+        }
+      ]
+    },
+    "9051": {
+      "year": 2026,
+      "sources": [
+        "https://andree.cl/admision-kinder-en-adelante/"
+      ],
+      "tuitionMonthly": {
+        "amount": 780000,
+        "currency": "CLP"
+      },
+      "installments": 10,
+      "enrollment": {
+        "amount": 230000,
+        "currency": "CLP"
+      },
+      "extras": [
+        {
+          "kind": "incorporacion",
+          "amount": 3900000,
+          "currency": "CLP",
+          "frequency": "entry"
+        },
+        {
+          "kind": "postulacion",
+          "amount": 50000,
+          "currency": "CLP",
+          "frequency": "entry"
+        }
+      ]
+    },
+    "9237": {
+      "year": 2025,
+      "sources": [
+        "https://www.institutohebreo.cl/docs/default-source/admisi%C3%B3n/matricula-guimel-pk-kinder-2025-%281%29.pdf?Status=Master",
+        "https://www.institutohebreo.cl/admision/basica"
+      ],
+      "tuitionMonthly": {
+        "amount": 19.62,
+        "currency": "UF"
+      }
+    },
+    "12265": {
+      "year": 2027,
+      "sources": [
+        "https://scross.cl/wp-content/uploads/2026/10/Valores-y-Reglamento-de-Pagos-2027.pdf"
+      ],
+      "tuitionAnnual": {
+        "amount": 175,
+        "currency": "UF"
+      },
+      "installments": 10,
+      "enrollment": {
+        "amount": 13,
+        "currency": "UF"
+      },
+      "extras": [
+        {
+          "kind": "incorporacion",
+          "amount": 70,
+          "currency": "UF",
+          "frequency": "entry"
+        },
+        {
+          "kind": "postulacion",
+          "amount": 50000,
+          "currency": "CLP",
+          "frequency": "entry"
+        }
+      ]
+    },
+    "20311": {
+      "year": 2026,
+      "sources": [
+        "https://seduc.cl/app/uploads/2025/10/VALORES_COLEGIOS-7oct.pdf",
+        "https://seduc.cl/app/uploads/2025/10/Terminos-y-Condiciones-Seduc-2026-version-colegios.pdf"
+      ],
+      "tuitionAnnual": {
+        "amount": 192.1,
+        "currency": "UF"
+      },
+      "installments": 10,
+      "enrollment": {
+        "amount": 16.72,
+        "currency": "UF"
+      },
+      "extras": [
+        {
+          "kind": "incorporacion",
+          "amount": 90,
+          "currency": "UF",
+          "frequency": "entry"
+        }
+      ]
+    },
+    "24624": {
+      "year": 2026,
+      "sources": [
+        "https://mtn.cl/admision#valores"
+      ],
+      "tuitionMonthly": {
+        "amount": 18.54,
+        "currency": "UF"
+      },
+      "installments": 10,
+      "enrollment": {
+        "amount": 14.04,
+        "currency": "UF"
+      },
+      "extras": [
+        {
+          "kind": "incorporacion",
+          "amount": 110.22,
+          "currency": "UF",
+          "frequency": "entry"
+        },
+        {
+          "kind": "postulacion",
+          "amount": 55000,
+          "currency": "CLP",
+          "frequency": "entry"
+        },
+        {
+          "kind": "centroPadres",
+          "amount": 0.14,
+          "currency": "UF",
+          "frequency": "monthly"
+        },
+        {
+          "kind": "seguro",
+          "amount": 0.16,
+          "currency": "UF",
+          "frequency": "monthly"
+        }
+      ]
+    },
+    "25654": {
+      "year": 2026,
+      "sources": [
+        "https://www.colegioeverest.cl/wp-content/uploads/2025/10/Valores-Colegio-Everest-2026.pdf"
+      ],
+      "tuitionAnnual": {
+        "amount": 189,
+        "currency": "UF"
+      },
+      "installments": 10,
+      "enrollment": {
+        "amount": 14.6,
+        "currency": "UF"
+      },
+      "extras": [
+        {
+          "kind": "incorporacion",
+          "amount": 95,
+          "currency": "UF",
+          "frequency": "entry"
+        }
+      ]
+    },
+    "25961": {
+      "year": 2026,
+      "basis": "topeLegal",
+      "sources": [
+        "https://www.comunidadescolar.cl/wp-content/uploads/2026/01/R13-REX-No241-22-01-2026-ANEXO1.pdf"
+      ],
+      "tuitionMonthly": {
+        "amount": 2.8335,
+        "currency": "UF"
+      },
+      "installments": 10
+    },
+    "25749": {
+      "year": 2026,
+      "basis": "topeLegal",
+      "sources": [
+        "https://www.comunidadescolar.cl/wp-content/uploads/2026/01/R13-REX-No241-22-01-2026-ANEXO1.pdf"
+      ],
+      "tuitionMonthly": {
+        "amount": 2.28,
+        "currency": "UF"
+      },
+      "installments": 11
+    },
+    "9967": {
+      "year": 2026,
+      "basis": "topeLegal",
+      "sources": [
+        "https://www.comunidadescolar.cl/wp-content/uploads/2026/01/R13-REX-No241-22-01-2026-ANEXO1.pdf"
+      ],
+      "tuitionMonthly": {
+        "amount": 2.7231,
+        "currency": "UF"
+      },
+      "installments": 11
+    },
+    "8833": {
+      "year": 2026,
+      "basis": "topeLegal",
+      "sources": [
+        "https://www.comunidadescolar.cl/wp-content/uploads/2026/01/R13-REX-No241-22-01-2026-ANEXO1.pdf"
+      ],
+      "tuitionMonthly": {
+        "amount": 1.7262,
+        "currency": "UF"
+      },
+      "installments": 10
+    },
+    "9905": {
+      "year": 2026,
+      "basis": "topeLegal",
+      "sources": [
+        "https://www.comunidadescolar.cl/wp-content/uploads/2026/01/R13-REX-No241-22-01-2026-ANEXO1.pdf"
+      ],
+      "tuitionMonthly": {
+        "amount": 2.3174,
+        "currency": "UF"
+      },
+      "installments": 10
+    },
+    "9907": {
+      "year": 2026,
+      "basis": "topeLegal",
+      "sources": [
+        "https://www.comunidadescolar.cl/wp-content/uploads/2026/01/R13-REX-No241-22-01-2026-ANEXO1.pdf"
+      ],
+      "tuitionMonthly": {
+        "amount": 2.0664,
+        "currency": "UF"
+      },
+      "installments": 11
+    },
+    "25558": {
+      "year": 2026,
+      "basis": "topeLegal",
+      "sources": [
+        "https://www.comunidadescolar.cl/wp-content/uploads/2026/01/R13-REX-No241-22-01-2026-ANEXO1.pdf"
+      ],
+      "tuitionMonthly": {
+        "amount": 2.3986,
+        "currency": "UF"
+      },
+      "installments": 10
+    },
+    "9570": {
+      "year": 2026,
+      "basis": "topeLegal",
+      "sources": [
+        "https://www.comunidadescolar.cl/wp-content/uploads/2026/01/R13-REX-No241-22-01-2026-ANEXO1.pdf"
+      ],
+      "tuitionMonthly": {
+        "amount": 2.8084,
+        "currency": "UF"
+      },
+      "installments": 10
+    },
+    "25722": {
+      "year": 2026,
+      "basis": "topeLegal",
+      "sources": [
+        "https://www.comunidadescolar.cl/wp-content/uploads/2026/01/R13-REX-No241-22-01-2026-ANEXO1.pdf"
+      ],
+      "tuitionMonthly": {
+        "amount": 2.8622,
+        "currency": "UF"
+      },
+      "installments": 11
+    },
+    "9317": {
+      "year": 2026,
+      "basis": "topeLegal",
+      "sources": [
+        "https://www.comunidadescolar.cl/wp-content/uploads/2026/01/R13-REX-No241-22-01-2026-ANEXO1.pdf"
+      ],
+      "tuitionMonthly": {
+        "amount": 3.9453,
+        "currency": "UF"
+      },
+      "installments": 10
+    },
+    "25520": {
+      "year": 2026,
+      "basis": "topeLegal",
+      "sources": [
+        "https://www.comunidadescolar.cl/wp-content/uploads/2026/01/R13-REX-No241-22-01-2026-ANEXO1.pdf"
+      ],
+      "tuitionMonthly": {
+        "amount": 3.3014,
+        "currency": "UF"
+      },
+      "installments": 11
+    },
+    "26001": {
+      "year": 2026,
+      "basis": "topeLegal",
+      "sources": [
+        "https://www.comunidadescolar.cl/wp-content/uploads/2026/01/R13-REX-No241-22-01-2026-ANEXO1.pdf"
+      ],
+      "tuitionMonthly": {
+        "amount": 2.777,
+        "currency": "UF"
+      },
+      "installments": 10
+    },
+    "25725": {
+      "year": 2026,
+      "basis": "topeLegal",
+      "sources": [
+        "https://www.comunidadescolar.cl/wp-content/uploads/2026/01/R13-REX-No241-22-01-2026-ANEXO1.pdf"
+      ],
+      "tuitionMonthly": {
+        "amount": 1.5661,
+        "currency": "UF"
+      },
+      "installments": 10
+    },
+    "8821": {
+      "year": 2026,
+      "basis": "topeLegal",
+      "sources": [
+        "https://www.comunidadescolar.cl/wp-content/uploads/2026/01/R13-REX-No241-22-01-2026-ANEXO1.pdf"
+      ],
+      "tuitionMonthly": {
+        "amount": 1.1163,
+        "currency": "UF"
+      },
+      "installments": 10
+    },
+    "24486": {
+      "year": 2026,
+      "basis": "gratuito",
+      "sources": [
+        "https://datosabiertos.mineduc.cl/directorio-de-establecimientos-educacionales/"
+      ],
+      "tuitionMonthly": {
+        "amount": 0,
+        "currency": "CLP"
+      },
+      "installments": 10
+    },
+    "24498": {
+      "year": 2026,
+      "basis": "gratuito",
+      "sources": [
+        "https://datosabiertos.mineduc.cl/directorio-de-establecimientos-educacionales/"
+      ],
+      "tuitionMonthly": {
+        "amount": 0,
+        "currency": "CLP"
+      },
+      "installments": 10
+    },
+    "9071": {
+      "year": 2026,
+      "basis": "gratuito",
+      "sources": [
+        "https://datosabiertos.mineduc.cl/directorio-de-establecimientos-educacionales/"
+      ],
+      "tuitionMonthly": {
+        "amount": 0,
+        "currency": "CLP"
+      },
+      "installments": 10
+    },
+    "9100": {
+      "year": 2026,
+      "basis": "gratuito",
+      "sources": [
+        "https://datosabiertos.mineduc.cl/directorio-de-establecimientos-educacionales/"
+      ],
+      "tuitionMonthly": {
+        "amount": 0,
+        "currency": "CLP"
+      },
+      "installments": 10
+    },
+    "8835": {
+      "year": 2026,
+      "basis": "gratuito",
+      "sources": [
+        "https://datosabiertos.mineduc.cl/directorio-de-establecimientos-educacionales/"
+      ],
+      "tuitionMonthly": {
+        "amount": 0,
+        "currency": "CLP"
+      },
+      "installments": 10
+    },
+    "25770": {
+      "year": 2026,
+      "basis": "gratuito",
+      "sources": [
+        "https://datosabiertos.mineduc.cl/directorio-de-establecimientos-educacionales/"
+      ],
+      "tuitionMonthly": {
+        "amount": 0,
+        "currency": "CLP"
+      },
+      "installments": 10
+    },
+    "24721": {
+      "year": 2026,
+      "basis": "gratuito",
+      "sources": [
+        "https://datosabiertos.mineduc.cl/directorio-de-establecimientos-educacionales/"
+      ],
+      "tuitionMonthly": {
+        "amount": 0,
+        "currency": "CLP"
+      },
+      "installments": 10
+    },
+    "8815": {
+      "year": 2026,
+      "basis": "gratuito",
+      "sources": [
+        "https://datosabiertos.mineduc.cl/directorio-de-establecimientos-educacionales/"
+      ],
+      "tuitionMonthly": {
+        "amount": 0,
+        "currency": "CLP"
+      },
+      "installments": 10
+    },
+    "9073": {
+      "year": 2026,
+      "basis": "gratuito",
+      "sources": [
+        "https://datosabiertos.mineduc.cl/directorio-de-establecimientos-educacionales/"
+      ],
+      "tuitionMonthly": {
+        "amount": 0,
+        "currency": "CLP"
+      },
+      "installments": 10
+    },
+    "8822": {
+      "year": 2026,
+      "basis": "gratuito",
+      "sources": [
+        "https://datosabiertos.mineduc.cl/directorio-de-establecimientos-educacionales/"
+      ],
+      "tuitionMonthly": {
+        "amount": 0,
+        "currency": "CLP"
+      },
+      "installments": 10
+    },
+    "25855": {
+      "year": 2026,
+      "basis": "gratuito",
+      "sources": [
+        "https://datosabiertos.mineduc.cl/directorio-de-establecimientos-educacionales/"
+      ],
+      "tuitionMonthly": {
+        "amount": 0,
+        "currency": "CLP"
+      },
+      "installments": 10
+    },
+    "8927": {
+      "year": 2026,
+      "basis": "gratuito",
+      "sources": [
+        "https://datosabiertos.mineduc.cl/directorio-de-establecimientos-educacionales/"
+      ],
+      "tuitionMonthly": {
+        "amount": 0,
+        "currency": "CLP"
+      },
+      "installments": 10
+    },
+    "8485": {
+      "year": 2026,
+      "basis": "gratuito",
+      "sources": [
+        "https://datosabiertos.mineduc.cl/directorio-de-establecimientos-educacionales/"
+      ],
+      "tuitionMonthly": {
+        "amount": 0,
+        "currency": "CLP"
+      },
+      "installments": 10
+    },
+    "8928": {
+      "year": 2026,
+      "basis": "gratuito",
+      "sources": [
+        "https://datosabiertos.mineduc.cl/directorio-de-establecimientos-educacionales/"
+      ],
+      "tuitionMonthly": {
+        "amount": 0,
+        "currency": "CLP"
+      },
+      "installments": 10
+    },
+    "9078": {
+      "year": 2026,
+      "basis": "gratuito",
+      "sources": [
+        "https://datosabiertos.mineduc.cl/directorio-de-establecimientos-educacionales/"
+      ],
+      "tuitionMonthly": {
+        "amount": 0,
+        "currency": "CLP"
+      },
+      "installments": 10
+    },
+    "31078": {
+      "year": 2026,
+      "basis": "gratuito",
+      "sources": [
+        "https://datosabiertos.mineduc.cl/directorio-de-establecimientos-educacionales/"
+      ],
+      "tuitionMonthly": {
+        "amount": 0,
+        "currency": "CLP"
+      },
+      "installments": 10
+    }
+  },
+  "notas": {
+    "topeLegal": "Subvencionados con financiamiento compartido: cobro mensual máximo por alumno 2026 fijado por la Seremi de Educación RM (REX N°241 del 22-01-2026); el colegio puede cobrar menos. No incluye matrícula.",
+    "gratuito": "Sin mensualidad según el Directorio de Establecimientos MINEDUC 2026 y sin fila en la REX N°241/2026."
+  }
+}

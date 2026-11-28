@@ -131,6 +131,27 @@ el texto de origen, tuvo 19 valores correctos (76 %). Los errores fueron:
 
 Por eso cada fila conserva la URL y el texto de origen.
 
+## Aranceles revisados de los mejores PAES de la RM
+
+`sources/school-fees-top-paes-rm.json` guarda, para 1.º básico, los cobros revisados a
+mano de los 15 colegios con mejor PAES Lectora + M1 (30 o más inscritos) de cada
+dependencia en la Región Metropolitana. `build_school_profiles.py` los copia a
+`colegios_web.json` como `arancelesRevisados`. El campo `basis` dice de dónde sale el
+monto:
+
+- `publicado` (o ausente): particulares pagados, con los valores y documentos que publica
+  cada colegio (colegiatura, matrícula, incorporación y otros cargos, con su fuente).
+- `topeLegal`: subvencionados con financiamiento compartido y el Liceo Amanda Labarca.
+  Es el cobro mensual máximo por alumno 2026 y su número de cuotas según la
+  [Resolución Exenta N°241 del 22-01-2026](https://www.comunidadescolar.cl/wp-content/uploads/2026/01/R13-REX-No241-22-01-2026-ANEXO1.pdf)
+  de la Seremi de Educación RM; si el cobro es diferenciado se usa la fila de básica que
+  incluye 1.º. El colegio puede cobrar menos y la resolución no fija matrícula.
+- `gratuito`: sin mensualidad según el Directorio MINEDUC 2026 y sin fila en esa
+  resolución (14 de los 15 públicos, Polivalente San Rafael y San Joaquín de Renca).
+
+La web suma el costo anual y el de primer año y marca como estimado lo que se completa con
+supuestos (10 cuotas cuando el colegio no las publica, años distintos, tope legal).
+
 ## Límites y próximos pasos
 
 - **Colegios sin sitio (163):** tienen un tamaño similar al resto (mediana de

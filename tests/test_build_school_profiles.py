@@ -302,7 +302,13 @@ class EndToEndTests(unittest.TestCase):
                 bundle.writestr("DEN_2025/Denuncias 2025.zip", inner.getvalue())
             (release_dir / "metadata.json").write_text(json.dumps({"upstream_release_id": "2025", "sha256": "f" * 64}))
 
-            schools, manifest = builder.build(archive, root / "out", root / "cache")
+            fees = root / "fees.json"
+            fees.write_text(json.dumps({"colegios": [{
+                "rbd": 100,
+                "confianza_sitio": "alta",
+                "montos": {"incorporacion": {"max_clp": 450000, "fuente": "https://example.org/fees"}},
+            }]}))
+            schools, manifest = builder.build(archive, root / "out", root / "cache", fees)
             paths = builder.write_outputs(schools, manifest, root / "out")
 
             school = schools[0]
@@ -315,6 +321,10 @@ class EndToEndTests(unittest.TestCase):
             self.assertEqual(web["colegios"][0]["rbd"], 100)
             self.assertEqual(web["colegios"][0]["paesNem"], 700.0)
             self.assertNotIn("mensualidadMaxClp", web["colegios"][0])
+            self.assertEqual(web["colegios"][0]["incorporacionMaxClp"], 450000)
+            self.assertEqual(web["colegios"][0]["arancelesFuente"], "https://example.org/fees")
+            review = {"year": 2026, "tuitionAnnual": {"amount": 192.1, "currency": "UF"}}
+            self.assertEqual(builder.web_record(school, review)["arancelesRevisados"], review)
             geojson = json.loads(paths["geojson"].read_text(encoding="utf-8"))
             self.assertEqual(geojson["features"][0]["geometry"]["coordinates"], [-70.61, -33.43])
             for path in paths.values():
